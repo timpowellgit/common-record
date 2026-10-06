@@ -42,9 +42,12 @@ needed.
 
 ## 1. Provision Neon with Terraform
 
-The module in `infra/neon` creates the project, its primary branch, database and
-role, and outputs the connection URI. It needs Terraform 1.14+ and follows the
-community `kislerdm/neon` provider (not officially supported by Neon).
+The module in `infra/neon` manages the project, its primary branch, database and
+role, and outputs the connection URIs. It needs Terraform 1.14+ and follows the
+community `kislerdm/neon` provider, pinned to `0.18.0` (not officially supported
+by Neon).
+
+**Creating a new project:**
 
 ```bash
 cd infra/neon
@@ -52,27 +55,48 @@ cp terraform.tfvars.example terraform.tfvars   # set neon_org_id
 terraform init
 terraform plan -out=tfplan
 terraform apply tfplan
-terraform output -raw connection_uri           # contains credentials
 ```
 
+**Adopting an existing project** (this is what the live `common_record` project
+uses — it was created in the Neon console, then imported):
+
+```bash
+cd infra/neon
+# defaults already match: pg 18, aws-us-east-2, branch production, db neondb
+terraform init
+terraform import neon_project.common_record <project-id>
+terraform plan          # expect: No changes.
+terraform output -raw connection_uri_pooler
+```
+
+Find `<project-id>` via
+`curl -H "Authorization: Bearer $NEON_API_KEY" https://console.neon.tech/api/v2/projects`.
 `main.tf` sets `prevent_destroy`, so a changed config cannot silently recreate
 the project.
 
-**State holds the database password.** `terraform.tfstate` is gitignored. For
-anything beyond local use, configure a remote backend (Terraform Cloud, S3, or
-an R2-backed state) so the secret is not only on one machine. Do not run
-`terraform init -upgrade` in CI; review provider upgrades by hand.
+**State holds the database password.** `terraform.tfstate` is gitignored, which
+also means it lives only where you ran `terraform apply`/`import`. Configure a
+remote backend (Terraform Cloud, S3, or R2) before relying on it from more than
+one machine — losing the state makes the next `apply` try to create a duplicate.
+Do not run `terraform init -upgrade` in CI; review provider upgrades by hand.
 
 ## 2. Load the schema
 
 ```bash
-export DATABASE_URL="$(cd infra/neon && terraform output -raw connection_uri)"
+export DATABASE_URL="$(cd infra/neon && terraform output -raw connection_uri_pooler)"
 scripts/apply-db-schema.sh "$DATABASE_URL"        # schema only
 scripts/apply-db-schema.sh "$DATABASE_URL" --seed # plus pilot data
 ```
 
 `psql` is required (`brew install libpq`, or add it to the DevBox shell). The
 script never reads or writes a credential itself; the URI comes from the caller.
+
+If you cannot install `psql`, the `pg` package already in `node_modules` can
+apply the same files:
+
+```bash
+node -e "const{Client}=require('pg');const fs=require('fs');(async()=>{const c=new Client({connectionString:process.env.DATABASE_URL,ssl:{rejectUnauthorized:false}});await c.connect();for(const f of ['db/schema.sql','db/seed.sql']){await c.query(fs.readFileSync(f,'utf8'));console.log('applied',f)}await c.end()})()"
+```
 
 ## 3. Connect Hyperdrive
 

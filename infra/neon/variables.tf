@@ -11,19 +11,19 @@ variable "neon_org_id" {
 variable "project_name" {
   description = "Neon project name."
   type        = string
-  default     = "common-record"
+  default     = "common_record"
 }
 
 variable "region_id" {
   description = "Neon region id, close to most users. See the Neon regions list."
   type        = string
-  default     = "aws-us-east-1"
+  default     = "aws-us-east-2"
 }
 
 variable "pg_version" {
   description = "PostgreSQL major version."
   type        = number
-  default     = 16
+  default     = 18
 
   validation {
     condition     = var.pg_version >= 15
@@ -40,13 +40,13 @@ variable "branch_name" {
 variable "database_name" {
   description = "Database name inside the project."
   type        = string
-  default     = "cr"
+  default     = "neondb"
 }
 
 variable "role_name" {
   description = "Application role that owns the database."
   type        = string
-  default     = "app"
+  default     = "neondb_owner"
 }
 
 variable "history_retention_seconds" {
@@ -64,5 +64,11 @@ variable "autoscaling_limit_min_cu" {
 variable "autoscaling_limit_max_cu" {
   description = "Maximum compute units."
   type        = number
-  default     = 1.0
+  default     = 2
+}
+
+variable "suspend_timeout_seconds" {
+  description = "Idle seconds before the compute suspends. 0 never suspends."
+  type        = number
+  default     = 0
 }

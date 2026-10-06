@@ -14,7 +14,13 @@ output "database_user" {
 }
 
 output "connection_uri" {
-  description = "Connection URI for the primary branch. Contains credentials."
+  description = "Direct connection URI for the primary branch. Contains credentials."
   value       = neon_project.common_record.connection_uri
+  sensitive   = true
+}
+
+output "connection_uri_pooler" {
+  description = "Pooled connection URI, for Hyperdrive. Contains credentials."
+  value       = neon_project.common_record.connection_uri_pooler
   sensitive   = true
 }

@@ -1,6 +1,11 @@
 # Copy to terraform.tfvars (gitignored) and fill in. No secrets belong here;
 # NEON_API_KEY is read from the environment.
+#
+# Only org id is required; the other defaults already match the existing
+# common_record project (pg 18, aws-us-east-2, branch production, db neondb).
 neon_org_id = "your-neon-organization-id"
-project_name = "common-record"
-region_id    = "aws-us-east-1"
-pg_version   = 16
+
+# Optional overrides
+# project_name = "common_record"
+# region_id    = "aws-us-east-2"
+# pg_version   = 18
