@@ -2,6 +2,7 @@ import { FormEvent, useEffect, useMemo, useState } from "react";
 import { demoNursingAgencyFilingPlan } from "./data/demo-filing-plan";
 import { OperatorDashboard, OperatorGate } from "./operator";
 import { PublicTimeline } from "./public/PublicTimeline";
+import { MockupGallery } from "./mockups/MockupGallery";
 
 type Campaign = {
   id: string;
@@ -143,6 +144,12 @@ function App() {
     notify("Proposal saved for review — this is a prototype, so nothing was submitted.");
   }
 
+  const view = new URLSearchParams(window.location.search).get("view");
+
+  if (view === "mockups") {
+    return <MockupGallery />;
+  }
+
   if (route === "#/operator") {
     return (
       <div className="operator-view">
@@ -237,7 +244,7 @@ function App() {
       <footer>
         <div className="brand"><span className="brand-mark">CR</span><span>Common Record</span></div>
         <p>A working concept for better access to public information in Canada.</p>
-        <span>Ontario · 2026</span>
+        <span>Ontario · 2026 · <a href="?view=mockups">Design mockups</a></span>
       </footer>
 
       {selected && (
