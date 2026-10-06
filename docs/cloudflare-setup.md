@@ -74,16 +74,37 @@ Find `<project-id>` via
 `main.tf` sets `prevent_destroy`, so a changed config cannot silently recreate
 the project.
 
-**State holds the database password.** `terraform.tfstate` is gitignored, which
-also means it lives only where you ran `terraform apply`/`import`. Configure a
-remote backend (Terraform Cloud, S3, or R2) before relying on it from more than
-one machine — losing the state makes the next `apply` try to create a duplicate.
-Do not run `terraform init -upgrade` in CI; review provider upgrades by hand.
+### Remote state (Neon, `pg` backend)
+
+State is stored in Neon with Terraform's `pg` backend, so it does not live on
+one laptop and gets real locking. The backend is already configured in
+`versions.tf`; you only supply the connection string.
+
+```bash
+export PG_CONN_STR="<direct Neon URI>?options=endpoint%3D<endpoint-id>"
+cd infra/neon
+terraform init -migrate-state -force-copy   # first time: copies local state up
+```
+
+Two things matter here:
+
+- **Use the direct URI, not the pooler.** The backend locks state with
+  session-level Postgres advisory locks, and PgBouncer transaction pooling does
+  not preserve a session.
+- **Append `options=endpoint=<endpoint-id>`** (URL-encoded as
+  `options=endpoint%3D<id>`), where `<endpoint-id>` is the first label of the
+  direct host (`ep-...`). Terraform's driver does not do SNI, and Neon requires
+  it on the direct endpoint.
+
+State lands in the `terraform_remote_state.states` table in the app's database.
+`terraform.tfstate` is gitignored because it holds the database password; after
+migration the local file is safe to delete. Do not run `terraform init -upgrade`
+in CI; review provider upgrades by hand.
 
 ## 2. Load the schema
 
 ```bash
-export DATABASE_URL="$(cd infra/neon && terraform output -raw connection_uri_pooler)"
+export DATABASE_URL="$(cd infra/neon && terraform output -raw connection_uri)"
 scripts/apply-db-schema.sh "$DATABASE_URL"        # schema only
 scripts/apply-db-schema.sh "$DATABASE_URL" --seed # plus pilot data
 ```
