@@ -10,8 +10,13 @@ This first version is deliberately small. It demonstrates:
 - detailed campaign budgets and public outputs;
 - a no-payment contribution interaction;
 - a public-question proposal form;
-- a supervised “compile filing plan” interaction;
+- a working supervised filing-plan generator for five Ontario hospitals;
+- a local-only operator screen for tracking requests and fee reviews;
 - a responsive editorial visual system.
+
+The pilot research uses current official filing instructions and is documented in
+[`docs/pilot-campaign-agency-nursing.md`](docs/pilot-campaign-agency-nursing.md).
+Routes and fees must still be re-verified immediately before any real filing.
 
 ## Run locally
 
@@ -26,13 +31,14 @@ Then open the local URL printed by Vite.
 
 ```bash
 npm run check
+npm test
 npm run build
 ```
 
 ## Product boundary
 
-This repository currently contains a front-end prototype. It does not collect payments, retain form submissions, or send public-records requests. Those boundaries are stated in the interface so it can be shared safely while the filing workflow is tested manually.
+This repository currently contains a front-end prototype. It does not collect payments, retain public form submissions, or send public-records requests. Operator changes are stored only in the current browser. Those boundaries are stated in the interface so it can be shared safely while the filing workflow is tested manually.
 
 ## Next useful milestone
 
-Replace the sample campaign with one real Ontario campaign involving 5–10 institutions, then add a reviewed campaign definition that can generate tailored request letters and a filing checklist.
+Have a human review the five generated request letters and official filing routes, add requester details outside the public repository, and then decide whether to authorize the $25 pilot filing. Real submission and payment are intentionally not automated.

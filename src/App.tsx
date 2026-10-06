@@ -1,4 +1,6 @@
 import { FormEvent, useMemo, useState } from "react";
+import { demoNursingAgencyFilingPlan } from "./data/demo-filing-plan";
+import { OperatorDashboard } from "./operator";
 
 type Campaign = {
   id: string;
@@ -11,7 +13,7 @@ type Campaign = {
   interested: number;
   institutions: number;
   accent: string;
-  status: "funding" | "requesting" | "publishing";
+  status: "pilot" | "concept";
   lead: string;
   output: string;
 };
@@ -19,49 +21,49 @@ type Campaign = {
 const campaigns: Campaign[] = [
   {
     id: "agency-nursing",
-    eyebrow: "Health care · Ontario",
+    eyebrow: "Researched pilot · Ontario",
     title: "What did hospitals spend on private nursing agencies?",
     summary:
-      "Build a hospital-by-hospital dataset of agency staffing costs, vendors, and hours for 2024–25.",
-    raised: 1438,
-    goal: 1850,
-    supporters: 326,
-    interested: 1904,
-    institutions: 12,
+      "Build a hospital-by-hospital dataset of agency staffing costs, vendors, and hours for 2022–26.",
+    raised: 0,
+    goal: 25,
+    supporters: 0,
+    interested: 0,
+    institutions: demoNursingAgencyFilingPlan.totals.requestCount,
     accent: "coral",
-    status: "funding",
+    status: "pilot",
     lead: "Proposed with a health-policy researcher",
     output: "A normalized CSV, request archive, methodology, and plain-language findings note.",
   },
   {
     id: "heat-plans",
-    eyebrow: "Climate · Municipal",
+    eyebrow: "Concept campaign · Municipal",
     title: "Which cities are ready for the next extreme heat emergency?",
     summary:
       "Compare heat-response plans, cooling-centre capacity, and post-event reviews across large Ontario cities.",
-    raised: 620,
+    raised: 0,
     goal: 620,
-    supporters: 184,
-    interested: 1106,
+    supporters: 0,
+    interested: 0,
     institutions: 8,
     accent: "yellow",
-    status: "requesting",
+    status: "concept",
     lead: "Community proposal",
     output: "A city-by-city comparison, source documents, and reusable emergency-planning dataset.",
   },
   {
     id: "school-repairs",
-    eyebrow: "Education · Toronto",
+    eyebrow: "Concept campaign · Toronto",
     title: "Where are urgent school repairs still waiting?",
     summary:
       "Open up the project lists, condition scores, and deferred repair costs behind the headline backlog number.",
-    raised: 284,
+    raised: 0,
     goal: 900,
-    supporters: 91,
-    interested: 732,
+    supporters: 0,
+    interested: 0,
     institutions: 4,
     accent: "blue",
-    status: "funding",
+    status: "concept",
     lead: "Parent-led proposal",
     output: "A school-level repair dataset with project status, estimated cost, and record provenance.",
   },
@@ -116,6 +118,7 @@ function App() {
   const [selected, setSelected] = useState<Campaign | null>(null);
   const [showProposal, setShowProposal] = useState(false);
   const [showContribution, setShowContribution] = useState(false);
+  const [showFilingPlan, setShowFilingPlan] = useState(false);
   const [amount, setAmount] = useState(5);
   const [toast, setToast] = useState("");
 
@@ -130,6 +133,15 @@ function App() {
     event.preventDefault();
     setShowProposal(false);
     notify("Proposal saved for review — this is a prototype, so nothing was submitted.");
+  }
+
+  if (new URLSearchParams(window.location.search).get("view") === "operator") {
+    return (
+      <div className="operator-view">
+        <a className="operator-back" href="?">← Return to public site</a>
+        <OperatorDashboard />
+      </div>
+    );
   }
 
   return (
@@ -181,7 +193,7 @@ function App() {
         <section className="campaign-section" id="campaigns">
           <div className="section-heading">
             <div>
-              <p className="kicker">Live and proposed campaigns</p>
+            <p className="kicker">Prototype campaign board · no money collected</p>
               <h2>What should the public know?</h2>
             </div>
             <p>Interest shows demand. Contributions pay for filing, follow-up, and turning records into something people can actually use.</p>
@@ -216,7 +228,7 @@ function App() {
       <footer>
         <div className="brand"><span className="brand-mark">CR</span><span>Common Record</span></div>
         <p>A working concept for better access to public information in Canada.</p>
-        <span>Ontario · 2026</span>
+        <span>Ontario · 2026 · <a href="?view=operator">Operator demo</a></span>
       </footer>
 
       {selected && (
@@ -234,10 +246,16 @@ function App() {
             </div>
             <div className="detail-block"><span>Campaign lead</span><p>{active.lead}</p></div>
             <div className="detail-block"><span>What becomes public</span><p>{active.output}</p></div>
-            <div className="filing-preview">
-              <div><span className="mini-label">Supervised automation</span><strong>{active.institutions} tailored requests ready to compile</strong></div>
-              <button type="button" onClick={() => notify("Filing plan compiled in demo mode. Final submission still needs approval.")}>Compile filing plan</button>
-            </div>
+            {active.id === "agency-nursing" ? (
+              <div className="filing-preview">
+                <div><span className="mini-label">Supervised automation</span><strong>{active.institutions} tailored requests ready to compile</strong></div>
+                <button type="button" onClick={() => setShowFilingPlan(true)}>Compile filing plan</button>
+              </div>
+            ) : (
+              <div className="filing-preview muted">
+                <div><span className="mini-label">Concept only</span><strong>This campaign has not been researched or prepared for filing.</strong></div>
+              </div>
+            )}
             <button className="button primary wide" type="button" onClick={() => setShowContribution(true)}>Contribute to this campaign</button>
             <p className="prototype-note">Prototype only—no payment will be collected.</p>
           </article>
@@ -272,6 +290,42 @@ function App() {
             <button className="button primary wide" type="button" onClick={() => { setShowContribution(false); setSelected(null); notify("Demo contribution recorded. No payment was collected."); }}>Continue</button>
             <p className="prototype-note">No account or payment required in this prototype.</p>
           </div>
+        </div>
+      )}
+
+      {showFilingPlan && (
+        <div className="overlay nested" role="presentation" onMouseDown={() => setShowFilingPlan(false)}>
+          <article className="filing-panel" role="dialog" aria-modal="true" aria-labelledby="filing-plan-title" onMouseDown={(e) => e.stopPropagation()}>
+            <button className="close" type="button" onClick={() => setShowFilingPlan(false)} aria-label="Close">×</button>
+            <p className="kicker">Supervised draft · no submissions</p>
+            <h2 id="filing-plan-title">Filing plan compiled.</h2>
+            <div className="plan-summary">
+              <div><strong>{demoNursingAgencyFilingPlan.totals.requestCount}</strong><span>tailored drafts</span></div>
+              <div><strong>{money.format(demoNursingAgencyFilingPlan.totals.estimatedApplicationFeesCents / 100)}</strong><span>estimated filing fees</span></div>
+              <div><strong>5</strong><span>approval gates each</span></div>
+            </div>
+            <div className="plan-warning">
+              <strong>Human review required</strong>
+              <p>{demoNursingAgencyFilingPlan.warnings[0]}</p>
+            </div>
+            <div className="request-list">
+              {demoNursingAgencyFilingPlan.requests.map((request, index) => (
+                <details key={request.id}>
+                  <summary>
+                    <span className="request-number">{String(index + 1).padStart(2, "0")}</span>
+                    <span><strong>{request.institutionName}</strong><small>{request.submission.kind.replace("-", " ")} · {money.format(request.estimatedApplicationFeeCents / 100)}</small></span>
+                    <span className="draft-badge">Draft</span>
+                  </summary>
+                  <div className="request-detail">
+                    <div><span>Subject</span><p>{request.subject}</p></div>
+                    <div><span>Approval gates</span><ul>{request.approvalGates.map((gate) => <li key={gate.kind}>{gate.label}</li>)}</ul></div>
+                    <div><span>Generated request preview</span><pre>{request.body}</pre></div>
+                  </div>
+                </details>
+              ))}
+            </div>
+            <p className="prototype-note">This plan prepares drafts only. It cannot file requests, send messages, or make payments.</p>
+          </article>
         </div>
       )}
 

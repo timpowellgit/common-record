@@ -1,8 +1,8 @@
 import type { Institution, RecordsCampaign } from "../domain/filing-plan";
 
 /**
- * Demonstration data for product development, not a filing directory.
- * Contacts, portal URLs, coverage, and fees require official-source verification.
+ * Official-source research checked 2026-10-05. This remains demonstration data,
+ * not a live filing directory: re-check every route and fee immediately before use.
  */
 export const ontarioHospitalInstitutions: readonly Institution[] = [
   {
@@ -13,14 +13,14 @@ export const ontarioHospitalInstitutions: readonly Institution[] = [
     institutionType: "hospital",
     freedomOfInformationOfficeName: "Freedom of Information and Privacy Office",
     submission: {
-      kind: "online-portal",
-      url: "https://www.uhn.ca/corporate/AboutUHN/Governance/Pages/freedom_information.aspx",
-      instructions: "Demo link to the institution's FOI information page; verify the current filing route.",
+      kind: "mail",
+      address: "Freedom of Information Coordinator, University Health Network, 190 Elizabeth Street, R. Fraser Elliott Building 2nd floor, Toronto ON M5G 2C4",
+      instructions: "Post the completed UHN form with a $5 cheque or money order, or use the form's credit-card fields. Do not mail cash.",
     },
     applicationFeeCents: 500,
-    feeStatus: "needs-verification",
-    contactStatus: "needs-verification",
-    verificationNote: "Demo entry. Verify UHN's current form, submission channel, and fee before use.",
+    feeStatus: "verified",
+    contactStatus: "verified",
+    verificationNote: "Checked against UHN's official FOI page and request form on 2026-10-05; re-check before filing.",
   },
   {
     id: "sunnybrook",
@@ -30,31 +30,14 @@ export const ontarioHospitalInstitutions: readonly Institution[] = [
     institutionType: "hospital",
     freedomOfInformationOfficeName: "Freedom of Information and Privacy Office",
     submission: {
-      kind: "online-portal",
-      url: "https://sunnybrook.ca/content/?page=freedom-information",
-      instructions: "Demo link to the institution's FOI information page; verify the current filing route.",
+      kind: "mail",
+      address: "Freedom of Information Office, H Wing Room H3-26, Sunnybrook Health Sciences Centre, 2075 Bayview Avenue, Toronto ON M4N 3M5",
+      instructions: "Post the completed form or request letter with a $5 cheque payable to Sunnybrook. Credit cards are not accepted; do not mail cash.",
     },
     applicationFeeCents: 500,
-    feeStatus: "needs-verification",
-    contactStatus: "needs-verification",
-    verificationNote: "Demo entry. Verify Sunnybrook's current form, submission channel, and fee before use.",
-  },
-  {
-    id: "unity-health-toronto",
-    name: "Unity Health Toronto",
-    shortName: "Unity Health",
-    jurisdiction: "Ontario",
-    institutionType: "hospital",
-    freedomOfInformationOfficeName: "Freedom of Information and Privacy Office",
-    submission: {
-      kind: "online-portal",
-      url: "https://unityhealth.to/about-unity-health/accountability/freedom-of-information/",
-      instructions: "Demo link to the institution's FOI information page; verify the current filing route.",
-    },
-    applicationFeeCents: 500,
-    feeStatus: "needs-verification",
-    contactStatus: "needs-verification",
-    verificationNote: "Demo entry. Verify Unity Health's current form, submission channel, and fee before use.",
+    feeStatus: "verified",
+    contactStatus: "verified",
+    verificationNote: "Checked against Sunnybrook's official FOI page and current form on 2026-10-05; re-check before filing.",
   },
   {
     id: "hamilton-health-sciences",
@@ -62,16 +45,33 @@ export const ontarioHospitalInstitutions: readonly Institution[] = [
     shortName: "HHS",
     jurisdiction: "Ontario",
     institutionType: "hospital",
-    freedomOfInformationOfficeName: "Freedom of Information Office",
+    freedomOfInformationOfficeName: "Freedom of Information and Privacy Office",
     submission: {
-      kind: "online-portal",
-      url: "https://www.hamiltonhealthsciences.ca/about-us/our-organization/accountability/freedom-of-information/",
-      instructions: "Demo link to the institution's FOI information page; verify the current filing route.",
+      kind: "mail",
+      address: "Privacy and Freedom of Information Office, Hamilton Health Sciences, P.O. Box 2000, Hamilton ON L8N 3Z5",
+      instructions: "Post the completed form with a $5 cheque or money order payable to Hamilton Health Sciences. Do not mail cash.",
     },
     applicationFeeCents: 500,
-    feeStatus: "needs-verification",
-    contactStatus: "needs-verification",
-    verificationNote: "Demo entry. Verify HHS's current form, submission channel, and fee before use.",
+    feeStatus: "verified",
+    contactStatus: "verified",
+    verificationNote: "Checked against Hamilton Health Sciences' official FOI page and form on 2026-10-05; re-check before filing.",
+  },
+  {
+    id: "london-health-sciences-centre",
+    name: "London Health Sciences Centre",
+    shortName: "LHSC",
+    jurisdiction: "Ontario",
+    institutionType: "hospital",
+    freedomOfInformationOfficeName: "Privacy Office",
+    submission: {
+      kind: "email",
+      email: "privacy@lhsc.on.ca",
+      instructions: "Before emailing the completed form, arrange the $5 fee with LHSC's Business Office and add its credit-card payment reference, or use the documented mail route.",
+    },
+    applicationFeeCents: 500,
+    feeStatus: "verified",
+    contactStatus: "verified",
+    verificationNote: "Checked against LHSC's official FIPPA page and form on 2026-10-05; re-check before filing.",
   },
   {
     id: "the-ottawa-hospital",
@@ -81,49 +81,45 @@ export const ontarioHospitalInstitutions: readonly Institution[] = [
     institutionType: "hospital",
     freedomOfInformationOfficeName: "Freedom of Information and Privacy Office",
     submission: {
-      kind: "online-portal",
-      url: "https://www.ottawahospital.on.ca/en/about-us/accountability/freedom-of-information/",
-      instructions: "Demo link to the institution's FOI information page; verify the current filing route.",
+      kind: "mail",
+      address: "FIPPA Coordinator, The Ottawa Hospital – Civic Campus, Box 656, 1053 Carling Avenue, Ottawa ON K1Y 4E9",
+      instructions: "Post a request letter with a $5 cheque payable to The Ottawa Hospital. The official page says email requests cannot be processed.",
     },
     applicationFeeCents: 500,
-    feeStatus: "needs-verification",
-    contactStatus: "needs-verification",
-    verificationNote: "Demo entry. Verify TOH's current form, submission channel, and fee before use.",
+    feeStatus: "verified",
+    contactStatus: "verified",
+    verificationNote: "Checked against The Ottawa Hospital's official FOI page on 2026-10-05; re-check before filing.",
   },
 ] as const;
 
 export const nursingAgencySpendingCampaign: RecordsCampaign = {
-  id: "agency-nursing-2024-25-demo",
-  title: "Ontario hospital private nursing agency spending, 2024–25",
-  question: "What did a pilot group of Ontario hospitals spend on private nursing agencies?",
+  id: "agency-nursing-2022-26-pilot",
+  title: "Ontario hospital private nursing agency spending, 2022–26",
+  question: "How much did five major Ontario hospital systems spend on private agency nurses in each of the last four completed fiscal years?",
   jurisdiction: "Ontario",
   legislation: "FIPPA",
   recordsPeriod: {
-    start: "2024-04-01",
-    end: "2025-03-31",
+    start: "2022-04-01",
+    end: "2026-03-31",
   },
   requestSections: [
     {
       id: "spend-summary",
       heading: "Agency spending summary",
-      request: "A report or export showing payments or expenditures for temporary nursing personnel supplied by external staffing agencies, broken down by vendor and month where available.",
+      request: "Any existing accounts-payable transaction report, expenditure extract, vendor-spend report, or equivalent record showing amounts invoiced or paid for temporary nursing personnel supplied by third-party staffing agencies. Please include fields already held in the source record, such as vendor, date, amount, site or cost centre, staff classification, billed hours, and hourly rate.",
     },
     {
       id: "hours-and-rates",
-      heading: "Hours and rates",
-      request: "Records showing agency nursing hours purchased and the hourly or shift rates charged, broken down by vendor and nursing classification where available.",
-    },
-    {
-      id: "contracts",
-      heading: "Vendor agreements",
-      request: "Executed contracts, standing offers, purchase orders, or rate sheets governing temporary nursing personnel supplied during the records period.",
+      heading: "Existing summaries",
+      request: "Any existing monthly, quarterly, or annual summary that reports the cost or hours of agency-supplied Registered Nurses, Registered Practical Nurses, or Nurse Practitioners.",
     },
   ],
   exclusions: [
     "Patient records and patient-identifying information.",
     "Individual staff names, personal contact information, and employee identifiers.",
-    "Duplicate copies of records that are identical in substance.",
+    "Individual shift schedules, copies of every invoice, and contracts at this stage.",
+    "The hospital's own employees, internal float pools, and contractors engaged directly rather than through a staffing agency.",
   ],
-  outputDescription: "A normalized vendor-by-hospital dataset, released source records, methodology, and documented gaps.",
+  outputDescription: "A normalized institution-by-year-by-agency dataset, released source records, methodology, and documented gaps.",
   dataStatus: "demo-only",
 };

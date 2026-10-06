@@ -24,7 +24,7 @@ describe("generateFilingPlan", () => {
 
     const uhnRequest = plan.requests.find((request) => request.institutionId === "uhn");
     expect(uhnRequest?.body).toContain("held by University Health Network");
-    expect(uhnRequest?.body).toContain("2024-04-01 to 2025-03-31");
+    expect(uhnRequest?.body).toContain("2022-04-01 to 2026-03-31");
     expect(uhnRequest?.body).toContain("It has not been submitted");
   });
 
@@ -92,8 +92,7 @@ describe("buildRequestBody", () => {
       ontarioHospitalInstitutions[0],
     );
     expect(body).toContain("1. Agency spending summary");
-    expect(body).toContain("2. Hours and rates");
-    expect(body).toContain("3. Vendor agreements");
+    expect(body).toContain("2. Existing summaries");
     expect(body).toContain("Patient records and patient-identifying information");
     expect(body).toContain("fee estimate before incurring fees beyond the application fee");
   });

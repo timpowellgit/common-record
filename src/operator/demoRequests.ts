@@ -1,76 +1,45 @@
+import { demoNursingAgencyFilingPlan } from "../data/demo-filing-plan";
+import type { SubmissionMethod } from "../domain/filing-plan";
 import type { OperatorRequest } from "./types";
 
 const seededAt = "2026-10-05T16:00:00.000Z";
 
+function filingMethod(submission: SubmissionMethod) {
+  if (submission.kind === "email") return "Email after payment setup";
+  if (submission.kind === "mail") return "Postal mail";
+  return "Online portal";
+}
+
+function filingDestination(submission: SubmissionMethod) {
+  if (submission.kind === "email") return submission.email;
+  if (submission.kind === "mail") return submission.address;
+  return submission.url;
+}
+
 /**
- * Fictional records for interface development only. Do not use these filing
- * destinations or fees for a real request without verifying them first.
+ * Local-only operator fixtures derived from the supervised filing plan. Every
+ * request begins as a draft; no request represented here has been submitted.
  */
-export const demoOperatorRequests: OperatorRequest[] = [
-  {
-    id: "demo-university-health-network",
-    campaignId: "agency-nursing",
-    campaignTitle: "Private nursing agency spending",
-    institution: "University Health Network",
-    filingMethod: "Institution portal",
-    filingDestination: "Verify before filing",
+export const demoOperatorRequests: OperatorRequest[] =
+  demoNursingAgencyFilingPlan.requests.map((request, index) => ({
+    id: request.id,
+    campaignId: request.campaignId,
+    campaignTitle: "Private nursing agency spending, 2022–26",
+    institution: request.institutionName,
+    filingMethod: filingMethod(request.submission),
+    filingDestination: filingDestination(request.submission),
     status: "draft",
-    applicationFee: 5,
+    applicationFee: request.estimatedApplicationFeeCents / 100,
     quotedFee: null,
     filedAt: null,
     dueAt: null,
-    operatorNotes: "Confirm the reporting period and records custodian.",
+    operatorNotes: request.verificationNote,
     updatedAt: seededAt,
     activity: [
       {
-        id: "demo-activity-1",
+        id: `demo-activity-${index + 1}`,
         at: seededAt,
-        message: "Demo request created.",
+        message: "Supervised draft created; no request has been sent.",
       },
     ],
-  },
-  {
-    id: "demo-ottawa-hospital",
-    campaignId: "agency-nursing",
-    campaignTitle: "Private nursing agency spending",
-    institution: "The Ottawa Hospital",
-    filingMethod: "Email or mail",
-    filingDestination: "Verify before filing",
-    status: "approved",
-    applicationFee: 5,
-    quotedFee: null,
-    filedAt: null,
-    dueAt: null,
-    operatorNotes: "Wording reviewed in demo mode; no request has been sent.",
-    updatedAt: seededAt,
-    activity: [
-      {
-        id: "demo-activity-2",
-        at: seededAt,
-        message: "Marked approved in demo data.",
-      },
-    ],
-  },
-  {
-    id: "demo-hamilton-health-sciences",
-    campaignId: "agency-nursing",
-    campaignTitle: "Private nursing agency spending",
-    institution: "Hamilton Health Sciences",
-    filingMethod: "Institution portal",
-    filingDestination: "Verify before filing",
-    status: "fee-review",
-    applicationFee: 5,
-    quotedFee: 180,
-    filedAt: "2026-09-20",
-    dueAt: "2026-10-20",
-    operatorNotes: "Fictional fee estimate included to exercise the review state.",
-    updatedAt: seededAt,
-    activity: [
-      {
-        id: "demo-activity-3",
-        at: seededAt,
-        message: "Demo fee estimate recorded.",
-      },
-    ],
-  },
-];
+  }));
