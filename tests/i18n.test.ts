@@ -25,8 +25,15 @@ describe("i18n dictionaries", () => {
   });
 
   it("labels event types in the requested locale", () => {
-    expect(timelineEventTypeLabel("request-filed", "en")).toBe("Request filed");
-    expect(timelineEventTypeLabel("request-filed", "fr")).toBe("Demande déposée");
+    expect(timelineEventTypeLabel("submitted-and-delivered", "en")).toBe(
+      "Request submitted and delivered",
+    );
+    expect(timelineEventTypeLabel("submitted-and-delivered", "fr")).toBe(
+      "Demande déposée et transmise",
+    );
+    expect(timelineEventTypeLabel("records-released", "fr")).toBe(
+      "Dossiers communiqués",
+    );
   });
 
   it("interpolates named parameters", () => {

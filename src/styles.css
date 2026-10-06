@@ -106,6 +106,7 @@ footer a { border-bottom: 1px solid currentColor; }
 .timeline-entry { border-left: 2px solid var(--green); padding-left: 14px; display: grid; gap: 6px; }
 .timeline-entry strong { font-size: 13px; }.timeline-entry p { margin: 0; font-size: 12px; line-height: 1.55; color: #4d5953; }
 .timeline-meta { font-family: "DM Mono"; font-size: 8px; letter-spacing: .05em; text-transform: uppercase; color: #71807b; }
+.timeline-source { color: #8a948f; }
 .form-panel label { display: flex; flex-direction: column; gap: 8px; margin-top: 23px; font-size: 11px; font-weight: 700; }
 .form-panel input, .form-panel textarea { width: 100%; padding: 14px; border: 1px solid var(--rule); border-radius: 0; background: white; outline: none; }.form-panel textarea { min-height: 95px; resize: vertical; }.form-panel input:focus, .form-panel textarea:focus { border-color: var(--green); }
 .amounts { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; margin: 34px 0 22px; }.amounts button { padding: 15px 5px; border: 1px solid var(--ink); background: transparent; cursor: pointer; }.amounts button.active { background: var(--acid); box-shadow: 3px 3px 0 var(--ink); }
