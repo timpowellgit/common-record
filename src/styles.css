@@ -97,6 +97,15 @@ footer a { border-bottom: 1px solid currentColor; }
 .filing-preview { margin-top: 24px; padding: 18px; border: 1px solid var(--green); background: #e3eddf; display: flex; align-items: center; justify-content: space-between; gap: 15px; }.filing-preview div { display: flex; flex-direction: column; gap: 5px; }.filing-preview .mini-label { margin: 0; color: var(--green); }.filing-preview strong { font-size: 12px; }.filing-preview button { border: 0; border-bottom: 1px solid; padding: 2px; background: none; font-size: 10px; cursor: pointer; white-space: nowrap; }
 .filing-preview.muted { border-color: var(--rule); background: #f2eee6; }.filing-preview.muted .mini-label { color: #68736d; }
 .prototype-note { text-align: center; font-size: 10px; color: #77807b; }
+.campaign-timeline { margin-top: 24px; padding-top: 18px; border-top: 1px solid var(--rule); display: grid; gap: 16px; }
+.campaign-timeline header { display: grid; gap: 7px; }.campaign-timeline .mini-label { margin: 0; color: var(--green); }.campaign-timeline header p { margin: 0; font-size: 11px; line-height: 1.5; color: #68736d; }
+.campaign-timeline.empty p { margin: 4px 0 0; font-size: 12px; color: #77807b; }
+.timeline-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 15px; }
+.timeline-list li { display: grid; grid-template-columns: 104px 1fr; gap: 14px; }
+.timeline-date { padding-top: 3px; font-family: "DM Mono"; font-size: 9px; letter-spacing: .06em; text-transform: uppercase; color: #68736d; }
+.timeline-entry { border-left: 2px solid var(--green); padding-left: 14px; display: grid; gap: 6px; }
+.timeline-entry strong { font-size: 13px; }.timeline-entry p { margin: 0; font-size: 12px; line-height: 1.55; color: #4d5953; }
+.timeline-meta { font-family: "DM Mono"; font-size: 8px; letter-spacing: .05em; text-transform: uppercase; color: #71807b; }
 .form-panel label { display: flex; flex-direction: column; gap: 8px; margin-top: 23px; font-size: 11px; font-weight: 700; }
 .form-panel input, .form-panel textarea { width: 100%; padding: 14px; border: 1px solid var(--rule); border-radius: 0; background: white; outline: none; }.form-panel textarea { min-height: 95px; resize: vertical; }.form-panel input:focus, .form-panel textarea:focus { border-color: var(--green); }
 .amounts { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; margin: 34px 0 22px; }.amounts button { padding: 15px 5px; border: 1px solid var(--ink); background: transparent; cursor: pointer; }.amounts button.active { background: var(--acid); box-shadow: 3px 3px 0 var(--ink); }

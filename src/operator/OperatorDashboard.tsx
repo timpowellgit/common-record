@@ -1,5 +1,8 @@
 import { useMemo, useState } from "react";
+import { demoNursingAgencyFilingPlan } from "../data/demo-filing-plan";
+import { FilingPackage } from "./FilingPackage";
 import { demoOperatorRequests } from "./demoRequests";
+import { PublishEventForm } from "./PublishEventForm";
 import { useOperatorRequests } from "./useOperatorRequests";
 import {
   requestStatuses,
@@ -53,6 +56,13 @@ export function OperatorDashboard({
         : requests.filter((request) => request.status === filter),
     [filter, requests],
   );
+  const planRequestById = useMemo(() => {
+    const map = new Map<string, (typeof demoNursingAgencyFilingPlan.requests)[number]>();
+    for (const planRequest of demoNursingAgencyFilingPlan.requests) {
+      map.set(planRequest.id, planRequest);
+    }
+    return map;
+  }, []);
 
   return (
     <section className="operator-shell" aria-labelledby="operator-title">
@@ -61,8 +71,9 @@ export function OperatorDashboard({
           <p className="operator-eyebrow">Private workflow prototype</p>
           <h1 id="operator-title">Request operations</h1>
           <p>
-            Changes stay in this browser. Nothing here files a request, sends a
-            message, collects a fee, or updates a public campaign.
+            Changes stay in this browser, including published timeline updates
+            until the production database exists. Nothing here files a request,
+            sends a message, or collects a fee.
           </p>
         </div>
         <button className="operator-reset" type="button" onClick={resetRequests}>
@@ -96,6 +107,14 @@ export function OperatorDashboard({
           ))}
         </select>
       </label>
+
+      <details className="operator-campaign-updates">
+        <summary>Publish a campaign-level public update</summary>
+        <PublishEventForm
+          campaignId={demoNursingAgencyFilingPlan.campaign.id}
+          requestRef={null}
+        />
+      </details>
 
       <div className="operator-list">
         {visibleRequests.map((request) => (
@@ -213,6 +232,25 @@ export function OperatorDashboard({
                 }
               />
             </label>
+
+            <FilingPackage
+              request={request}
+              planRequest={planRequestById.get(request.id)}
+              onPreflightChange={(preflight) =>
+                updateRequest(
+                  request.id,
+                  { preflight },
+                  "Filing package preflight updated.",
+                )
+              }
+              onPublicUpdate={(title) =>
+                updateRequest(
+                  request.id,
+                  {},
+                  `Public timeline update published: ${title}`,
+                )
+              }
+            />
 
             <details className="operator-history">
               <summary>Local activity ({request.activity.length})</summary>

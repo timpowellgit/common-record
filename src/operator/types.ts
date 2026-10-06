@@ -1,3 +1,5 @@
+import type { PreflightState } from "../domain/filing-package";
+
 export const requestStatuses = [
   "draft",
   "approved",
@@ -31,6 +33,7 @@ export type OperatorRequest = {
   operatorNotes: string;
   updatedAt: string;
   activity: RequestActivity[];
+  preflight?: PreflightState;
 };
 
 export type OperatorRequestPatch = Partial<
@@ -41,5 +44,6 @@ export type OperatorRequestPatch = Partial<
     | "filedAt"
     | "dueAt"
     | "operatorNotes"
+    | "preflight"
   >
 >;

@@ -72,8 +72,10 @@ export interface FilingRequest {
   campaignId: string;
   institutionId: string;
   institutionName: string;
+  foiOfficeName: string;
   subject: string;
   body: string;
+  letterBody: string;
   submission: SubmissionMethod;
   estimatedApplicationFeeCents: number;
   verificationStatus: VerificationStatus;
@@ -155,17 +157,21 @@ function buildApprovalGates(institution: Institution): readonly ApprovalGate[] {
   ];
 }
 
-export function buildRequestBody(campaign: RecordsCampaign, institution: Institution): string {
+export function buildLetterBody(campaign: RecordsCampaign, institution: Institution): string {
   const sections = campaign.requestSections
     .map((section, index) => `${index + 1}. ${section.heading}\n${section.request}`)
     .join("\n\n");
   const exclusions = campaign.exclusions.map((exclusion) => `- ${exclusion}`).join("\n");
 
-  return `To: ${institution.freedomOfInformationOfficeName}\n\n` +
-    `Under Ontario's ${campaign.legislation}, I request the following records held by ${institution.name} for the period ${campaign.recordsPeriod.start} to ${campaign.recordsPeriod.end}, inclusive.\n\n` +
+  return `Under Ontario's ${campaign.legislation}, I request the following records held by ${institution.name} for the period ${campaign.recordsPeriod.start} to ${campaign.recordsPeriod.end}, inclusive.\n\n` +
     `${sections}\n\n` +
     `To reduce privacy impact and processing work, this request excludes:\n${exclusions}\n\n` +
-    "Please provide responsive records electronically in their native machine-readable format where available. If clarification could reduce the scope, cost, or processing time, please contact the requester before proceeding. Please provide a fee estimate before incurring fees beyond the application fee.\n\n" +
+    "Please provide responsive records electronically in their native machine-readable format where available. If clarification could reduce the scope, cost, or processing time, please contact the requester before proceeding. Please provide a fee estimate before incurring fees beyond the application fee.";
+}
+
+export function buildRequestBody(campaign: RecordsCampaign, institution: Institution): string {
+  return `To: ${institution.freedomOfInformationOfficeName}\n\n` +
+    `${buildLetterBody(campaign, institution)}\n\n` +
     "This is a draft generated for human review. It has not been submitted.";
 }
 
@@ -198,8 +204,10 @@ export function generateFilingPlan(
     campaignId: campaign.id,
     institutionId: institution.id,
     institutionName: institution.name,
+    foiOfficeName: institution.freedomOfInformationOfficeName,
     subject: `Freedom of information request — ${campaign.title}`,
     body: buildRequestBody(campaign, institution),
+    letterBody: buildLetterBody(campaign, institution),
     submission: institution.submission,
     estimatedApplicationFeeCents: institution.applicationFeeCents,
     verificationStatus: combineVerificationStatus(campaign, institution),

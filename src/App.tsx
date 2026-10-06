@@ -1,6 +1,7 @@
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import { demoNursingAgencyFilingPlan } from "./data/demo-filing-plan";
-import { OperatorDashboard } from "./operator";
+import { OperatorDashboard, OperatorGate } from "./operator";
+import { PublicTimeline } from "./public/PublicTimeline";
 
 type Campaign = {
   id: string;
@@ -121,6 +122,13 @@ function App() {
   const [showFilingPlan, setShowFilingPlan] = useState(false);
   const [amount, setAmount] = useState(5);
   const [toast, setToast] = useState("");
+  const [route, setRoute] = useState(() => window.location.hash);
+
+  useEffect(() => {
+    const onHashChange = () => setRoute(window.location.hash);
+    window.addEventListener("hashchange", onHashChange);
+    return () => window.removeEventListener("hashchange", onHashChange);
+  }, []);
 
   const active = useMemo(() => selected ?? campaigns[0], [selected]);
 
@@ -135,11 +143,12 @@ function App() {
     notify("Proposal saved for review — this is a prototype, so nothing was submitted.");
   }
 
-  if (new URLSearchParams(window.location.search).get("view") === "operator") {
+  if (route === "#/operator") {
     return (
       <div className="operator-view">
-        <a className="operator-back" href="?">← Return to public site</a>
-        <OperatorDashboard />
+        <OperatorGate>
+          <OperatorDashboard />
+        </OperatorGate>
       </div>
     );
   }
@@ -228,7 +237,7 @@ function App() {
       <footer>
         <div className="brand"><span className="brand-mark">CR</span><span>Common Record</span></div>
         <p>A working concept for better access to public information in Canada.</p>
-        <span>Ontario · 2026 · <a href="?view=operator">Operator demo</a></span>
+        <span>Ontario · 2026</span>
       </footer>
 
       {selected && (
@@ -247,10 +256,13 @@ function App() {
             <div className="detail-block"><span>Campaign lead</span><p>{active.lead}</p></div>
             <div className="detail-block"><span>What becomes public</span><p>{active.output}</p></div>
             {active.id === "agency-nursing" ? (
-              <div className="filing-preview">
-                <div><span className="mini-label">Supervised automation</span><strong>{active.institutions} tailored requests ready to compile</strong></div>
-                <button type="button" onClick={() => setShowFilingPlan(true)}>Compile filing plan</button>
-              </div>
+              <>
+                <div className="filing-preview">
+                  <div><span className="mini-label">Supervised automation</span><strong>{active.institutions} tailored requests ready to compile</strong></div>
+                  <button type="button" onClick={() => setShowFilingPlan(true)}>Compile filing plan</button>
+                </div>
+                <PublicTimeline campaignId={demoNursingAgencyFilingPlan.campaign.id} />
+              </>
             ) : (
               <div className="filing-preview muted">
                 <div><span className="mini-label">Concept only</span><strong>This campaign has not been researched or prepared for filing.</strong></div>

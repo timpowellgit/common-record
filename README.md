@@ -13,16 +13,32 @@ This first version is deliberately small. It demonstrates:
 - a no-payment contribution interaction;
 - a public-question proposal form;
 - a working supervised filing-plan generator for five Ontario hospitals;
-- a local-only operator screen for tracking requests and fee reviews;
-- a responsive editorial visual system.
+- a public campaign timeline fed only by operator-approved events;
+- a passcode-gated operator screen (unlinked from the public site) for
+  tracking requests, printing filing packages, and publishing timeline updates;
+- a responsive editorial visual system;
+- English/French message infrastructure for the public timeline.
 
 The pilot research uses current official filing instructions and is documented in
 [`docs/pilot-campaign-agency-nursing.md`](docs/pilot-campaign-agency-nursing.md).
-Routes and fees must still be re-verified immediately before any real filing.
+The Phase 0 database schema and seed data live in
+[`db/`](db/README.md) — designed and validated against PostgreSQL, not yet
+deployed. Routes and fees must still be re-verified immediately before any
+real filing.
 
 The phased path to a production service—including real payments, live request
 tracking, institution mapping, geographic hubs, social publishing and French—is
-in [`docs/roadmap.md`](docs/roadmap.md).
+in [`docs/roadmap.md`](docs/roadmap.md). Draft campaign rules awaiting legal
+review are in [`docs/campaign-rules-draft.md`](docs/campaign-rules-draft.md),
+and the production platform recommendation is in
+[`docs/production-platform-decision.md`](docs/production-platform-decision.md).
+
+## Operator access
+
+The operator workflow is unlinked from the public site. Open `#/operator`
+directly and use the demo passcode `pilot-2026`. The gate is a workflow
+boundary, not security; see
+[`docs/operator-workflow-and-deployment.md`](docs/operator-workflow-and-deployment.md).
 
 ## Run locally
 
@@ -43,8 +59,8 @@ npm run build
 
 ## Product boundary
 
-This repository currently contains a front-end prototype. It does not collect payments, retain public form submissions, or send public-records requests. Operator changes are stored only in the current browser. Those boundaries are stated in the interface so it can be shared safely while the filing workflow is tested manually.
+This repository currently contains a front-end prototype. It does not collect payments, retain public form submissions, or send public-records requests. Operator changes and published timeline events are stored only in the current browser. Printed request letters contain requester details only in the open tab and are never saved. Those boundaries are stated in the interface so it can be shared safely while the filing workflow is tested manually.
 
 ## Next useful milestone
 
-Have a human review the five generated request letters and official filing routes, add requester details outside the public repository, and then decide whether to authorize the $25 pilot filing. Real submission and payment are intentionally not automated.
+Use the operator screen to complete the preflight checklist for each of the five requests, enter requester details in the print flow, print and review the letters against the official filing routes, and then decide whether to authorize the $25 pilot filing. Real submission and payment are intentionally not automated.

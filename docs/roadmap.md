@@ -4,6 +4,38 @@ This roadmap takes Common Record from a public prototype to a bilingual Canadian
 
 The sequence matters. Payments should not launch before campaign rules, refunds, accounting, security and operational ownership are ready. Automated filing should not launch before an institution's route has been manually verified end to end.
 
+## Status — October 2026
+
+Progress against "Immediate next sprint" (see the end of this document):
+
+- [x] **Database schema designed and validated** — `db/schema.sql` and
+  `db/seed.sql` cover places, institutions, versioned filing routes, the
+  campaign, five draft requests, and append-only status/audit events, with
+  private requester data in a separate table. Applied and tested against
+  PostgreSQL 15; not yet deployed anywhere.
+- [x] **Operator screen behind a gated route** — `#/operator` with a session
+  passcode gate; no public query parameter or footer link. A workflow boundary,
+  not authentication.
+- [x] **Printable request packages with preflight** — per-request checklist,
+  private requester fields that are never persisted, and a print-formatted
+  letter that only unlocks when preflight and requester details are complete.
+- [x] **Public campaign timeline** — operator-approved events only, validated
+  to the same rules the database enforces; shown on the pilot campaign page.
+  Prototype events still live in browser storage, not the database.
+- [x] **Internationalization infrastructure** — `src/i18n/` with complete
+  English and French dictionaries for the new public strings and a
+  compile/runtime completeness check. The full French surface remains Phase 7.
+- [x] **Campaign rules drafted** — `docs/campaign-rules-draft.md` covers
+  surplus, failure, withdrawal, narrowing, appeals, refunds, chargebacks and
+  privacy, ready for legal and accounting review.
+- [x] **Platform recommendation prepared** — `docs/production-platform-decision.md`;
+  final vendor selection remains Tim's decision.
+- [ ] **Deploy the schema to a real database and serve the site from it** —
+  blocked on the platform decision above; this is the first Phase 1 task.
+
+Not started: real staff authentication, file storage and scanning, payments,
+email, deadlines, social publishing, and Quebec research.
+
 ## Product destination
 
 Common Record should let someone:
