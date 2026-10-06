@@ -192,6 +192,11 @@ npx wrangler domains add api.example.com
 
 ## 7. Operator API and access
 
+**Status:** configured in production. Team domain
+`commonrecord.cloudflareaccess.com`; the Access app is scoped to
+`commonrecord.ca/api/operator`, so the public site stays open. See
+[`production-inventory.md`](production-inventory.md) for the exact ids.
+
 The operator write path is a guarded API: `POST
 /api/operator/campaigns/:slug/events`. It writes an approved `request_event`
 plus an `audit_event` row. Every request must carry a Cloudflare Access JWT in

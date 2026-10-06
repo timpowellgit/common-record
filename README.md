@@ -4,7 +4,9 @@
 
 Common Record is a working product concept for collectively commissioning public-information campaigns in Canada. People signal interest in a question, contribute toward the real cost of acquiring the records, and receive a public dataset—not just a folder of PDFs.
 
-**Live prototype:** [timpowellgit.github.io/common-record](https://timpowellgit.github.io/common-record/)
+**Live:** [commonrecord.ca](https://commonrecord.ca/) (database-backed Worker and
+Neon Postgres) · [static prototype](https://timpowellgit.github.io/common-record/)
+(GitHub Pages, prototype data)
 
 This first version is deliberately small. It demonstrates:
 
@@ -24,9 +26,10 @@ This first version is deliberately small. It demonstrates:
 The pilot research uses current official filing instructions and is documented in
 [`docs/pilot-campaign-agency-nursing.md`](docs/pilot-campaign-agency-nursing.md).
 The Phase 0 database schema and seed data live in
-[`db/`](db/README.md). It has been run end to end locally against PostgreSQL 15
-through the Cloudflare Worker, but no database is deployed yet. `infra/neon`
-provisions a Neon project with Terraform. Routes and fees must still be
+[`db/`](db/README.md); it is deployed to Neon and served through the Cloudflare
+Worker. `infra/neon` manages the Neon project with Terraform. See
+[`docs/production-inventory.md`](docs/production-inventory.md) for what is
+provisioned and where each secret lives. Routes and fees must still be
 re-verified immediately before any real filing.
 
 The phased path to a production service—including real payments, live request
