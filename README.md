@@ -25,8 +25,9 @@ The pilot research uses current official filing instructions and is documented i
 [`docs/pilot-campaign-agency-nursing.md`](docs/pilot-campaign-agency-nursing.md).
 The Phase 0 database schema and seed data live in
 [`db/`](db/README.md). It has been run end to end locally against PostgreSQL 15
-through the Cloudflare Worker, but no database is deployed yet. Routes and fees
-must still be re-verified immediately before any real filing.
+through the Cloudflare Worker, but no database is deployed yet. `infra/neon`
+provisions a Neon project with Terraform. Routes and fees must still be
+re-verified immediately before any real filing.
 
 The phased path to a production service—including real payments, live request
 tracking, institution mapping, geographic hubs, social publishing and French—is

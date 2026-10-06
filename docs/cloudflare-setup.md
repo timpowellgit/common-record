@@ -1,99 +1,120 @@
 # Cloudflare and Neon setup
 
-Step-by-step for running the API locally and deploying the approved
-Cloudflare Workers + Neon stack. Nothing here is required to run the static
-prototype; the GitHub Pages build has no API and falls back to the local
-timeline store.
+No-browser setup for the approved Cloudflare Workers + Neon stack. Every step
+is a CLI command. The only things that cannot be done without a browser are
+creating the Neon account and minting the first API keys; after that, nothing
+here needs the dashboard.
 
-Architecture: Cloudflare Workers (TypeScript) serves both the built single-page
-app and a read-only API. Neon Postgres is the system of record, reached through
-a Cloudflare Hyperdrive binding in production and a plain connection string in
-development. The schema is `db/schema.sql`; R2, Resend, Queues and Cron are
+Architecture: Cloudflare Workers (TypeScript) serves the built single-page app
+and a read-only API. Neon Postgres is the system of record, reached through a
+Cloudflare Hyperdrive binding in production and a plain connection string in
+development. The schema is `db/schema.sql`. R2, Resend, Queues and Cron are
 later phases and are not configured yet.
 
 ## What the API serves
 
-| Route                                        | Purpose                                    |
-| -------------------------------------------- | ------------------------------------------ |
-| `GET /api/health`                             | Service and database status                |
-| `GET /api/campaigns/:slug/timeline`           | Operator-approved public timeline events   |
+| Route                                | Purpose                                  |
+| ------------------------------------ | ---------------------------------------- |
+| `GET /api/health`                    | Service and database status              |
+| `GET /api/campaigns/:slug/timeline`  | Operator-approved public timeline events |
 
 The API is deliberately read-only. Operator writes still live in the browser
-until real authentication exists. Anything that is not approved for public
-visibility — internal notes, requester details, budgets — is filtered out in
-SQL, never in the client.
+until real authentication exists. Anything not approved for public visibility —
+internal notes, requester details, budgets — is filtered out in SQL, never in
+the client.
 
-## 1. Prerequisites
+## 0. One-time credentials (the only browser steps)
 
-- Node 22 and npm.
-- A Cloudflare account.
-- A Neon account.
-- For local database work, any PostgreSQL 15+ instance. Docker or Colima works:
+- **Neon**: sign up, then Account Settings → API Keys → create a key.
+  `export NEON_API_KEY=...`
+- **Cloudflare**: My Profile → API Tokens → create a token with
+  `Workers Scripts:Edit`, `Hyperdrive:Edit`, `Account Settings:Read`, and
+  `User Details:Read`. `export CLOUDFLARE_API_TOKEN=...`
+- Get the Cloudflare account id without the dashboard:
+  `curl -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" https://api.cloudflare.com/client/v4/accounts`
+  `export CLOUDFLARE_ACCOUNT_ID=...`
+- Get the Neon organization id the same way:
+  `curl -H "Authorization: Bearer $NEON_API_KEY" https://console.neon.tech/api/v2/organizations`
 
-  ```bash
-  docker run -d --name cr-db -e POSTGRES_PASSWORD=dev -p 5432:5432 postgres:15
-  ```
+Keep both keys out of the repository. `wrangler` reads `CLOUDFLARE_API_TOKEN`
+and `CLOUDFLARE_ACCOUNT_ID` from the environment, so `wrangler login` is never
+needed.
 
-## 2. Run the API locally
+## 1. Provision Neon with Terraform
 
-Create the database and apply the schema and seed:
+The module in `infra/neon` creates the project, its primary branch, database and
+role, and outputs the connection URI. It needs Terraform 1.14+ and follows the
+community `kislerdm/neon` provider (not officially supported by Neon).
 
 ```bash
-docker exec cr-db psql -U postgres -c 'create database cr;'
-docker exec -i cr-db psql -U postgres -d cr -v ON_ERROR_STOP=1 < db/schema.sql
-docker exec -i cr-db psql -U postgres -d cr -v ON_ERROR_STOP=1 < db/seed.sql
+cd infra/neon
+cp terraform.tfvars.example terraform.tfvars   # set neon_org_id
+terraform init
+terraform plan -out=tfplan
+terraform apply tfplan
+terraform output -raw connection_uri           # contains credentials
 ```
 
-Create `.dev.vars` in the repository root. It is gitignored and must never be
-committed:
+`main.tf` sets `prevent_destroy`, so a changed config cannot silently recreate
+the project.
+
+**State holds the database password.** `terraform.tfstate` is gitignored. For
+anything beyond local use, configure a remote backend (Terraform Cloud, S3, or
+an R2-backed state) so the secret is not only on one machine. Do not run
+`terraform init -upgrade` in CI; review provider upgrades by hand.
+
+## 2. Load the schema
+
+```bash
+export DATABASE_URL="$(cd infra/neon && terraform output -raw connection_uri)"
+scripts/apply-db-schema.sh "$DATABASE_URL"        # schema only
+scripts/apply-db-schema.sh "$DATABASE_URL" --seed # plus pilot data
+```
+
+`psql` is required (`brew install libpq`, or add it to the DevBox shell). The
+script never reads or writes a credential itself; the URI comes from the caller.
+
+## 3. Connect Hyperdrive
+
+Hyperdrive gives the Worker connection pooling and query caching. It reads the
+connection string from the environment, so no login prompt:
+
+```bash
+npx wrangler hyperdrive create common-record-db --connection-string="$DATABASE_URL"
+```
+
+Paste the returned `id` into the commented `hyperdrive` block in
+`wrangler.jsonc` and uncomment it. The `id` is not a secret, so it is safe to
+commit. Keep `localConnectionString` pointed at local Postgres so
+`wrangler dev` never touches Neon.
+
+## 4. Run the API locally
+
+With a local PostgreSQL 15+ (Docker or Colima):
+
+```bash
+docker run -d --name cr-db -e POSTGRES_PASSWORD=dev -p 5432:5432 postgres:15
+docker exec cr-db psql -U postgres -c 'create database cr;'
+scripts/apply-db-schema.sh "postgresql://postgres:dev@127.0.0.1:5432/cr" --seed
+```
+
+Then either set the Hyperdrive block's `localConnectionString` (step 3) or a
+gitignored `.dev.vars`:
 
 ```
 DB_URL=postgresql://postgres:dev@127.0.0.1:5432/cr
 ```
 
-Then run the Worker and the front end in two terminals:
+Run the Worker and the front end in two terminals:
 
 ```bash
-npm run dev:worker   # builds, then starts wrangler dev on :8787
+npm run dev:worker   # builds, then wrangler dev on :8787
 npm run dev          # Vite on :5173, proxying /api to :8787
 ```
 
-Open the Vite URL. The campaign timeline should show the two seeded events and
-the line "Live from the database". Stopping the Worker leaves the site working
-against its local store, labelled as prototype data.
-
-## 3. Provision Neon
-
-1. Create a Neon project and a database.
-2. Apply the schema and seed. Either paste `db/schema.sql` and `db/seed.sql`
-   into the Neon SQL editor, or use the Neon CLI:
-
-   ```bash
-   neonctl connection-string --project-name <project>
-   ```
-
-3. Copy the **pooled** connection string. It is long-lived and safe for the
-   Worker; the direct string is only for migrations and one-off queries.
-
-## 4. Connect Hyperdrive
-
-Hyperdrive gives the Worker connection pooling and query caching. Create it
-once, using the pooled Neon string:
-
-```bash
-npx wrangler login
-npx wrangler hyperdrive create common-record-db \
-  --connection-string="postgresql://...pooler.../cr?sslmode=require"
-```
-
-Add the returned id to `wrangler.jsonc`:
-
-```jsonc
-"hyperdrive": [{ "binding": "HYPERDRIVE", "id": "<returned-id>" }],
-```
-
-The connection string is stored in Cloudflare's secret store, not in the
-repository. `worker/db.ts` prefers `HYPERDRIVE` and falls back to `DB_URL`.
+The timeline should show the seeded events and "Live from the database".
+Stopping the Worker leaves the site working against its local store, labelled as
+prototype data.
 
 ## 5. Deploy
 
@@ -101,32 +122,34 @@ repository. `worker/db.ts` prefers `HYPERDRIVE` and falls back to `DB_URL`.
 npm run deploy
 ```
 
-`wrangler.jsonc` serves `dist` as static assets with single-page-application
-fallback and `run_worker_first: ["/api/*"]`, so app routes resolve to
-`index.html` and API routes reach the Worker.
+`wrangler.jsonc` serves `dist` with single-page-application fallback and
+`run_worker_first: ["/api/*"]`, so app routes resolve to `index.html` and API
+routes reach the Worker. If the database is not yet provisioned the Worker still
+deploys; `/api/*` returns `503` and the site uses its local store.
 
-To attach a custom domain:
+Custom domain:
 
 ```bash
 npx wrangler domains add api.example.com
 ```
 
-For a database that is not yet provisioned, the Worker still deploys and
-serves the app; `/api/*` returns `503` and the site uses its local store.
-
 ## 6. Continuous integration
 
-GitHub Actions still deploys the static prototype to Pages on every push to
-`main`. Automating `wrangler deploy` is deliberately **not** wired up yet. When
-it is, add a separate job guarded by a GitHub environment, with
-`CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, and `CLOUDFLARE_DRY_RUN`
-during review, so a pull request cannot publish the API by accident.
+- `.github/workflows/ci.yml` runs typecheck, tests and build on every pull
+  request and push to `main`. It uses no credentials.
+- `.github/workflows/deploy-pages.yml` still deploys the static prototype to
+  Pages on pushes to `main`.
+- `.github/workflows/deploy-api.yml` deploys the Worker, but is **manual only**
+  (`workflow_dispatch`) with a dry run by default. Add `CLOUDFLARE_API_TOKEN`
+  and `CLOUDFLARE_ACCOUNT_ID` as repository secrets and attach the workflow to
+  the `production` environment. Switch it to a push trigger with required
+  reviewers only after a few manual deploys are trusted.
 
 ## Troubleshooting
 
 **`/api/health` returns `{"database":"not-configured"}`** — neither a
-Hyperdrive binding nor `DB_URL` is visible. Check `.dev.vars` exists and
-contains `DB_URL`, then restart `wrangler dev`.
+Hyperdrive binding nor `DB_URL` is visible. Check `.dev.vars` or the Hyperdrive
+block, then restart `wrangler dev`.
 
 **A request hangs until the runtime cancels it** — `worker/db.ts` creates one
 `pg` client per request on purpose. A cached `Pool` keeps an idle socket that
@@ -134,19 +157,24 @@ the Workers runtime reaps, and the next query then waits on a dead connection
 forever. Do not reintroduce a shared pool.
 
 **Timeline is empty on a deployed site** — check the campaign slug matches
-`campaign.slug`, and that the events are approved with `visibility = 'public'`.
+`campaign.slug`, and that events are approved with `visibility = 'public'`.
 Internal `note` events are excluded by design.
 
-**Timeline shows "Prototype data" on GitHub Pages** — expected. The Pages
-build is static only and has no API to call.
+**Timeline shows "Prototype data" on GitHub Pages** — expected. The Pages build
+is static only and has no API to call.
 
-**`npm run deploy` fails on authentication** — run `npx wrangler login`, or
-set `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`.
+**`terraform apply` fails on `org_id`** — set `neon_org_id` in
+`infra/neon/terraform.tfvars`; leaving it blank can create the project in the
+wrong organization.
+
+**Provider version errors on `terraform init`** — the `neon` provider is
+community-maintained; adjust the `version` constraint in
+`infra/neon/versions.tf` to the current release on the Terraform Registry.
 
 ## Data safety
 
-- `.dev.vars`, `.wrangler/` and `*.local` are gitignored. Never commit a
-  connection string.
+- `.dev.vars`, `.wrangler/`, `*.local`, Terraform state and `*.tfvars` are
+  gitignored. Never commit a connection string or a state file.
 - The seed data is fictional pilot data. Replace it before any real use.
 - Requester identity is still prototype-only: it stays in the print flow and is
   never stored. See `docs/operator-workflow-and-deployment.md`.

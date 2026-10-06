@@ -10,4 +10,16 @@
     "not_found_handling": "single-page-application",
     "run_worker_first": ["/api/*"]
   }
+
+  // Provision Neon and Hyperdrive first, then uncomment and paste the id.
+  // See docs/cloudflare-setup.md. localConnectionString keeps `wrangler dev`
+  // pointed at local Postgres, so local development never touches Neon.
+  //
+  // "hyperdrive": [
+  //   {
+  //     "binding": "HYPERDRIVE",
+  //     "id": "<hyperdrive-id>",
+  //     "localConnectionString": "postgresql://postgres:dev@127.0.0.1:5432/cr"
+  //   }
+  // ]
 }
