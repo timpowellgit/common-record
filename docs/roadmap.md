@@ -30,11 +30,16 @@ Progress against "Immediate next sprint" (see the end of this document):
   privacy, ready for legal and accounting review.
 - [x] **Platform recommendation prepared** — `docs/production-platform-decision.md`;
   final vendor selection remains Tim's decision.
-- [ ] **Deploy the schema to a real database and serve the site from it** —
-  blocked on the platform decision above; this is the first Phase 1 task.
+- [x] **Deploy the schema to a real database and serve the site from it** —
+  Neon Postgres behind a Cloudflare Worker and Hyperdrive; the public timeline
+  is database-backed. (First Phase 1 task.)
+- [~] **Authenticated operator write path** — the guarded
+  `POST /api/operator/campaigns/:slug/events` endpoint exists and verifies
+  Cloudflare Access JWTs, but Access cannot be applied until a custom domain is
+  attached, so the operator screen still falls back to browser storage.
 
-Not started: real staff authentication, file storage and scanning, payments,
-email, deadlines, social publishing, and Quebec research.
+Not started: file storage and scanning, payments, email, deadlines, social
+publishing, and Quebec research.
 
 ## Product destination
 

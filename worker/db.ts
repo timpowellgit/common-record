@@ -12,9 +12,35 @@ export type TimelineRow = {
   approvedAt: string;
 };
 
+export type StaffUser = {
+  id: string;
+  email: string;
+  displayName: string;
+  role: string;
+};
+
+export type NewRequestEvent = {
+  campaignSlug: string;
+  recordRequestExternalId: string | null;
+  eventType: string;
+  occurredOn: string;
+  title: string;
+  detail: string | null;
+  visibility: "public" | "private";
+  approvedByUserId: string;
+  approvedAt: string;
+};
+
+export type CreatedEvent = {
+  id: string;
+  occurredOn: string;
+};
+
 export type Db = {
   health(): Promise<boolean>;
   campaignTimeline(campaignSlug: string): Promise<TimelineRow[]>;
+  findStaffByEmail(email: string): Promise<StaffUser | null>;
+  createRequestEvent(event: NewRequestEvent): Promise<CreatedEvent | null>;
 };
 
 const timelineQuery = `
@@ -50,6 +76,44 @@ type TimelineQueryResult = {
   approved_by: string;
   approved_at: Date;
 };
+
+const staffByEmailQuery = `
+  select id, email::text as email, display_name, role::text as role
+  from staff_user
+  where email = $1
+  limit 1
+`;
+
+/**
+ * Insert an operator-approved event and its audit row in one transaction.
+ * Returns null when the campaign slug is unknown, or when an external request
+ * id was given but does not belong to that campaign.
+ */
+const insertEventQuery = `
+  insert into request_event
+    (campaign_id, record_request_id, event_type, occurred_on, title, detail,
+     visibility, approved_by, approved_at)
+  select c.id,
+         r.id,
+         $3::request_event_type,
+         $4::date,
+         $5,
+         $6,
+         $7::event_visibility,
+         $8::bigint,
+         $9::timestamptz
+  from campaign c
+  left join record_request r
+    on r.external_id = $2 and r.campaign_id = c.id
+  where c.slug = $1
+    and ($2 is null or r.id is not null)
+  returning id, to_char(occurred_on, 'YYYY-MM-DD') as occurred_on
+`;
+
+const insertAuditQuery = `
+  insert into audit_event (actor_id, action, entity_kind, entity_id, detail)
+  values ($1::bigint, 'request_event.create', 'request_event', $2::bigint, $3::jsonb)
+`;
 
 /**
  * One client per request. The Workers runtime reaps long-idle sockets, so a
@@ -100,7 +164,67 @@ export function createDbFromConnectionString(connectionString: string): Db {
             row.approved_at instanceof Date
               ? row.approved_at.toISOString()
               : String(row.approved_at),
-        }));
+          }));
+      });
+    },
+
+    findStaffByEmail(email: string) {
+      return withClient(connectionString, async (client) => {
+        const result = await client.query<{
+          id: string;
+          email: string;
+          display_name: string;
+          role: string;
+        }>(staffByEmailQuery, [email]);
+        const row = result.rows[0];
+        if (!row) return null;
+        return {
+          id: String(row.id),
+          email: row.email,
+          displayName: row.display_name,
+          role: row.role,
+        };
+      });
+    },
+
+    createRequestEvent(event: NewRequestEvent): Promise<CreatedEvent | null> {
+      return withClient(connectionString, async (client) => {
+        await client.query("begin");
+        try {
+          const result = await client.query<{ id: string; occurred_on: string }>(
+            insertEventQuery,
+            [
+              event.campaignSlug,
+              event.recordRequestExternalId,
+              event.eventType,
+              event.occurredOn,
+              event.title,
+              event.detail,
+              event.visibility,
+              event.approvedByUserId,
+              event.approvedAt,
+            ],
+          );
+          const row = result.rows[0];
+          if (!row) {
+            await client.query("rollback");
+            return null;
+          }
+          await client.query(insertAuditQuery, [
+            event.approvedByUserId,
+            row.id,
+            JSON.stringify({
+              campaignSlug: event.campaignSlug,
+              eventType: event.eventType,
+              visibility: event.visibility,
+            }),
+          ]);
+          await client.query("commit");
+          return { id: String(row.id), occurredOn: row.occurred_on };
+        } catch (error) {
+          await client.query("rollback");
+          throw error;
+        }
       });
     },
   };

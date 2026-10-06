@@ -190,6 +190,39 @@ npx wrangler domains add api.example.com
   default to a dry run. It needs repository secrets `CLOUDFLARE_API_TOKEN` and
   `CLOUDFLARE_ACCOUNT_ID`; without them the run fails after approval.
 
+## 7. Operator API and access
+
+The operator write path is a guarded API: `POST
+/api/operator/campaigns/:slug/events`. It writes an approved `request_event`
+plus an `audit_event` row. Every request must carry a Cloudflare Access JWT in
+the `Cf-Access-Jwt-Assertion` header; the Worker verifies it against the team's
+public keys, then maps the email to a `staff_user`. Signed-in but unknown users
+get `403`.
+
+**Access requires a custom domain.** Cloudflare Access is applied to a hostname
+in a zone you control, so it cannot protect a bare `workers.dev` subdomain.
+Until a domain is attached and these vars are set, the operator API returns
+`401`/`503` and the operator screen falls back to its local prototype store.
+
+Configure:
+
+1. Add the custom domain (for example `api.commonrecord.ca` or the apex) to
+   Cloudflare and route it to the Worker (`npx wrangler domains add ...`).
+2. Create an Access application for that hostname with an allow policy (email
+   OTP or an identity provider), and copy its **Application Audience (AUD)**
+   tag.
+3. Set the Worker vars:
+
+   ```bash
+   npx wrangler secret put ACCESS_TEAM_DOMAIN   # e.g. commonrecord.cloudflareaccess.com
+   npx wrangler secret put ACCESS_AUD           # the Access application AUD tag
+   ```
+
+4. Ensure the operator's email exists in `staff_user` (see `db/seed.sql`).
+
+Local development: with neither var set, the operator API is disabled and the
+prototype store is used, so nothing breaks before a domain exists.
+
 ## Troubleshooting
 
 **`/api/health` returns `{"database":"not-configured"}`** — neither a
