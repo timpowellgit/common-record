@@ -1,7 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { loadPublicTimeline, subscribeToPublicTimeline } from "../data/timeline-store";
-import { campaignTimeline, type PublicTimelineEvent } from "../domain/timeline";
+import {
+  campaignTimeline,
+  mergeTimelineSources,
+  type PublicTimelineEvent,
+} from "../domain/timeline";
 import { t, timelineEventTypeLabel, type Locale } from "../i18n";
+import { fetchCampaignTimeline } from "./api";
 
 type PublicTimelineProps = {
   campaignId: string;
@@ -15,18 +20,35 @@ function formatDate(value: string) {
 }
 
 export function PublicTimeline({ campaignId, locale = "en" }: PublicTimelineProps) {
-  const [events, setEvents] = useState<PublicTimelineEvent[]>(() =>
+  const [databaseEvents, setDatabaseEvents] = useState<PublicTimelineEvent[] | null>(
+    null,
+  );
+  const [localEvents, setLocalEvents] = useState<PublicTimelineEvent[]>(() =>
     loadPublicTimeline(),
   );
 
   useEffect(
-    () => subscribeToPublicTimeline(() => setEvents(loadPublicTimeline())),
+    () => subscribeToPublicTimeline(() => setLocalEvents(loadPublicTimeline())),
     [],
   );
 
+  useEffect(() => {
+    let cancelled = false;
+    void fetchCampaignTimeline(campaignId).then((events) => {
+      if (!cancelled && events !== null) setDatabaseEvents(events);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [campaignId]);
+
   const timeline = useMemo(
-    () => campaignTimeline(events, campaignId),
-    [events, campaignId],
+    () =>
+      mergeTimelineSources(
+        databaseEvents,
+        campaignTimeline(localEvents, campaignId),
+      ),
+    [databaseEvents, localEvents, campaignId],
   );
 
   if (timeline.length === 0) {
@@ -42,7 +64,14 @@ export function PublicTimeline({ campaignId, locale = "en" }: PublicTimelineProp
     <section className="campaign-timeline" aria-label={t("timeline.heading", locale)}>
       <header>
         <span className="mini-label">{t("timeline.heading", locale)}</span>
-        <p>{t("timeline.intro", locale)}</p>
+        <p>
+          {t("timeline.intro", locale)}{" "}
+          <span className="timeline-source">
+            {databaseEvents
+              ? t("timeline.sourceLive", locale)
+              : t("timeline.sourceLocal", locale)}
+          </span>
+        </p>
       </header>
       <ol className="timeline-list">
         {timeline.map((event) => (

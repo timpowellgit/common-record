@@ -17,14 +17,16 @@ This first version is deliberately small. It demonstrates:
 - a passcode-gated operator screen (unlinked from the public site) for
   tracking requests, printing filing packages, and publishing timeline updates;
 - a responsive editorial visual system;
-- English/French message infrastructure for the public timeline.
+- English/French message infrastructure for the public timeline;
+- a Cloudflare Worker serving a read-only public timeline API backed by
+  PostgreSQL, merged with the browser's local events and labelled by source.
 
 The pilot research uses current official filing instructions and is documented in
 [`docs/pilot-campaign-agency-nursing.md`](docs/pilot-campaign-agency-nursing.md).
 The Phase 0 database schema and seed data live in
-[`db/`](db/README.md) — designed and validated against PostgreSQL, not yet
-deployed. Routes and fees must still be re-verified immediately before any
-real filing.
+[`db/`](db/README.md). It has been run end to end locally against PostgreSQL 15
+through the Cloudflare Worker, but no database is deployed yet. Routes and fees
+must still be re-verified immediately before any real filing.
 
 The phased path to a production service—including real payments, live request
 tracking, institution mapping, geographic hubs, social publishing and French—is
@@ -49,6 +51,11 @@ npm run dev
 
 Then open the local URL printed by Vite.
 
+To also run the database-backed API, follow
+[`docs/cloudflare-setup.md`](docs/cloudflare-setup.md). In short: start a local
+PostgreSQL, apply `db/schema.sql` and `db/seed.sql`, put a `DB_URL` in a
+gitignored `.dev.vars`, then run `npm run dev:worker` alongside `npm run dev`.
+
 ## Checks
 
 ```bash
@@ -59,7 +66,13 @@ npm run build
 
 ## Product boundary
 
-This repository currently contains a front-end prototype. It does not collect payments, retain public form submissions, or send public-records requests. Operator changes and published timeline events are stored only in the current browser. Printed request letters contain requester details only in the open tab and are never saved. Those boundaries are stated in the interface so it can be shared safely while the filing workflow is tested manually.
+This repository currently contains a front-end prototype plus a read-only
+timeline API. It does not collect payments, retain public form submissions, or
+send public-records requests. Operator changes and published timeline events are
+stored only in the current browser, and are written to the database by no code
+path yet. Printed request letters contain requester details only in the open tab
+and are never saved. Those boundaries are stated in the interface so it can be
+shared safely while the filing workflow is tested manually.
 
 ## Next useful milestone
 

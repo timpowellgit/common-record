@@ -21,7 +21,7 @@ export function PublishEventForm({
   requestRef = null,
   onPublished,
 }: PublishEventFormProps) {
-  const [type, setType] = useState<PublicTimelineEventType>("request-filed");
+  const [type, setType] = useState<PublicTimelineEventType>("submitted-and-delivered");
   const [occurredOn, setOccurredOn] = useState(today());
   const [title, setTitle] = useState("");
   const [detail, setDetail] = useState("");

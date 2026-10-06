@@ -1,12 +1,25 @@
 export const publicTimelineEventTypes = [
   "research-completed",
   "routes-verified",
-  "request-filed",
+  "draft-approved",
+  "submitted-and-delivered",
   "acknowledgment-received",
+  "deadline-set",
+  "clarification-requested",
+  "clarification-answered",
+  "extension-claimed",
   "fee-estimate-received",
+  "fee-approved",
+  "fee-disputed",
   "fee-paid",
-  "response-received",
+  "response-overdue",
+  "partial-decision-received",
+  "final-decision-received",
+  "records-released",
   "records-published",
+  "dataset-published",
+  "appeal-filed",
+  "appeal-resolved",
 ] as const;
 
 export type PublicTimelineEventType = (typeof publicTimelineEventTypes)[number];
@@ -102,4 +115,27 @@ export function campaignTimeline(
         a.occurredOn.localeCompare(b.occurredOn) ||
         a.approvedAt.localeCompare(b.approvedAt),
     );
+}
+
+/**
+ * Combine database-sourced events with locally stored prototype events.
+ * Database events win on id collision; the result stays chronologically
+ * ordered so the public timeline reads as one story.
+ */
+export function mergeTimelineSources(
+  databaseEvents: readonly PublicTimelineEvent[] | null,
+  localEvents: readonly PublicTimelineEvent[],
+): PublicTimelineEvent[] {
+  const merged = new Map<string, PublicTimelineEvent>();
+  for (const event of localEvents) {
+    merged.set(event.id, event);
+  }
+  for (const event of databaseEvents ?? []) {
+    merged.set(event.id, event);
+  }
+  return [...merged.values()].sort(
+    (a, b) =>
+      a.occurredOn.localeCompare(b.occurredOn) ||
+      a.approvedAt.localeCompare(b.approvedAt),
+  );
 }

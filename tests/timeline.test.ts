@@ -3,6 +3,7 @@ import {
   campaignTimeline,
   createPublicTimelineEvent,
   isPublicTimelineEvent,
+  mergeTimelineSources,
   publicTimelineEventTypes,
   type PublicTimelineEvent,
 } from "../src/domain/timeline";
@@ -12,7 +13,7 @@ function validEvent(overrides: Partial<PublicTimelineEvent> = {}): PublicTimelin
     id: "event-1",
     campaignId: "agency-nursing-2022-26-pilot",
     requestRef: null,
-    type: "request-filed",
+    type: "submitted-and-delivered",
     occurredOn: "2026-10-05",
     title: "Request filed with UHN",
     detail: "The application fee was enclosed.",
@@ -76,7 +77,7 @@ describe("createPublicTimelineEvent", () => {
     const event = createPublicTimelineEvent({
       campaignId: "agency-nursing-2022-26-pilot",
       requestRef: "University Health Network",
-      type: "request-filed",
+      type: "submitted-and-delivered",
       occurredOn: "2026-10-06",
       title: "  Request filed with UHN  ",
       detail: "  ",
@@ -95,7 +96,7 @@ describe("createPublicTimelineEvent", () => {
     const base = {
       campaignId: "agency-nursing-2022-26-pilot",
       requestRef: null as string | null,
-      type: "request-filed" as const,
+      type: "submitted-and-delivered" as const,
       detail: null,
     };
     expect(createPublicTimelineEvent({ ...base, occurredOn: "2026-10-06", title: "", approvedBy: "x" })).toBeNull();
@@ -104,6 +105,34 @@ describe("createPublicTimelineEvent", () => {
   });
 
   it("covers the public event vocabulary", () => {
-    expect(publicTimelineEventTypes).toContain("records-published");
+    expect(publicTimelineEventTypes).toContain("records-released");
+    expect(publicTimelineEventTypes).toContain("submitted-and-delivered");
+    expect(publicTimelineEventTypes).not.toContain("note");
+  });
+});
+
+describe("mergeTimelineSources", () => {
+  it("keeps database events on id collision and stays chronological", () => {
+    const local = [
+      validEvent({ id: "shared", title: "Local version", occurredOn: "2026-10-04" }),
+      validEvent({ id: "local-only", occurredOn: "2026-10-08" }),
+    ];
+    const database = [
+      validEvent({ id: "db-only", occurredOn: "2026-10-02" }),
+      validEvent({ id: "shared", title: "Database version", occurredOn: "2026-10-04" }),
+    ];
+
+    const merged = mergeTimelineSources(database, local);
+    expect(merged.map((event) => event.id)).toEqual([
+      "db-only",
+      "shared",
+      "local-only",
+    ]);
+    expect(merged[1].title).toBe("Database version");
+  });
+
+  it("returns local events unchanged when the database is unavailable", () => {
+    const local = [validEvent()];
+    expect(mergeTimelineSources(null, local)).toEqual([validEvent()]);
   });
 });
