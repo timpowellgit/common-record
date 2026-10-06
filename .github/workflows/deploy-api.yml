@@ -1,0 +1,46 @@
+name: Deploy API to Cloudflare Workers
+
+# Manual only. Automating this on push would publish the live API the moment a
+# pull request merges, with no chance to review. Move it to a push trigger,
+# behind the "production" environment with required reviewers, once a few
+# manual deploys have been verified.
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Build and validate without publishing
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Typecheck
+        run: npm run check
+      - name: Test
+        run: npm test
+      - name: Build
+        run: npm run build
+      - name: Validate deploy
+        if: ${{ inputs.dry_run }}
+        run: npx wrangler deploy --dry-run
+      - name: Deploy
+        if: ${{ !inputs.dry_run }}
+        run: npx wrangler deploy

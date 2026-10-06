@@ -6,3 +6,15 @@ dist
 *.tsbuildinfo
 .dev.vars
 .wrangler
+
+# Terraform: state and plan files hold the database password (connection_uri is
+# sensitive). Never commit them. Commit .terraform.lock.hcl for reproducibility.
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+tfplan
+crash.log
+crash.*.log
+*.tfvars
+!*.tfvars.example
