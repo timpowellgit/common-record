@@ -4,6 +4,8 @@
 
 Common Record is a working product concept for collectively commissioning public-information campaigns in Canada. People signal interest in a question, contribute toward the real cost of acquiring the records, and receive a public dataset—not just a folder of PDFs.
 
+**Live prototype:** [timpowellgit.github.io/common-record](https://timpowellgit.github.io/common-record/)
+
 This first version is deliberately small. It demonstrates:
 
 - a campaign discovery homepage;
