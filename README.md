@@ -20,6 +20,10 @@ The pilot research uses current official filing instructions and is documented i
 [`docs/pilot-campaign-agency-nursing.md`](docs/pilot-campaign-agency-nursing.md).
 Routes and fees must still be re-verified immediately before any real filing.
 
+The phased path to a production service—including real payments, live request
+tracking, institution mapping, geographic hubs, social publishing and French—is
+in [`docs/roadmap.md`](docs/roadmap.md).
+
 ## Run locally
 
 ```bash
