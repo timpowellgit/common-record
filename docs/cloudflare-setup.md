@@ -184,11 +184,11 @@ npx wrangler domains add api.example.com
   request and push to `main`. It uses no credentials.
 - `.github/workflows/deploy-pages.yml` still deploys the static prototype to
   Pages on pushes to `main`.
-- `.github/workflows/deploy-api.yml` deploys the Worker, but is **manual only**
-  (`workflow_dispatch`) with a dry run by default. Add `CLOUDFLARE_API_TOKEN`
-  and `CLOUDFLARE_ACCOUNT_ID` as repository secrets and attach the workflow to
-  the `production` environment. Switch it to a push trigger with required
-  reviewers only after a few manual deploys are trusted.
+- `.github/workflows/deploy-api.yml` deploys the Worker on push to `main`,
+  gated by the `production` environment, which requires a reviewer — nothing
+  publishes until someone approves the run. Manual runs (`workflow_dispatch`)
+  default to a dry run. It needs repository secrets `CLOUDFLARE_API_TOKEN` and
+  `CLOUDFLARE_ACCOUNT_ID`; without them the run fails after approval.
 
 ## Troubleshooting
 

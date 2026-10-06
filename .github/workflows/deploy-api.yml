@@ -1,10 +1,11 @@
 name: Deploy API to Cloudflare Workers
 
-# Manual only. Automating this on push would publish the live API the moment a
-# pull request merges, with no chance to review. Move it to a push trigger,
-# behind the "production" environment with required reviewers, once a few
-# manual deploys have been verified.
+# Deploys on merge to main, but the "production" environment requires a
+# reviewer, so nothing publishes until it is approved. Manual runs default to
+# a dry run.
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
     inputs:
       dry_run:
@@ -14,6 +15,10 @@ on:
 
 permissions:
   contents: read
+
+concurrency:
+  group: deploy-api-production
+  cancel-in-progress: false
 
 jobs:
   deploy:
@@ -39,8 +44,8 @@ jobs:
       - name: Build
         run: npm run build
       - name: Validate deploy
-        if: ${{ inputs.dry_run }}
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
         run: npx wrangler deploy --dry-run
       - name: Deploy
-        if: ${{ !inputs.dry_run }}
+        if: ${{ github.event_name == 'push' || !inputs.dry_run }}
         run: npx wrangler deploy
