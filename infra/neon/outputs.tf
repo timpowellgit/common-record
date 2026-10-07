@@ -13,14 +13,5 @@ output "database_user" {
   value       = neon_project.common_record.database_user
 }
 
-output "connection_uri" {
-  description = "Direct connection URI for the primary branch. Contains credentials."
-  value       = neon_project.common_record.connection_uri
-  sensitive   = true
-}
-
-output "connection_uri_pooler" {
-  description = "Pooled connection URI, for Hyperdrive. Contains credentials."
-  value       = neon_project.common_record.connection_uri_pooler
-  sensitive   = true
-}
+# Deliberately do not export connection URIs. They contain credentials and
+# remain accessible inside Terraform state even when marked sensitive.
