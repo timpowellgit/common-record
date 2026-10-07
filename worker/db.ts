@@ -36,12 +36,141 @@ export type CreatedEvent = {
   occurredOn: string;
 };
 
+export type WorkflowPreflight = Partial<Record<"route" | "fee" | "wording" | "enclosures", boolean>> & {
+  routeConfirmedOn?: string;
+  feeConfirmedOn?: string;
+};
+
+export type OperatorRequestRow = {
+  id: string;
+  campaignId: string;
+  campaignTitle: string;
+  institution: string;
+  filingMethod: string;
+  filingDestination: string;
+  status: string;
+  applicationFeeCents: number;
+  quotedFeeCents: number | null;
+  filedOn: string | null;
+  dueOn: string | null;
+  operatorNotes: string;
+  updatedAt: string;
+  version: number;
+  preflight: WorkflowPreflight;
+  activity: { id: string; at: string; message: string }[];
+};
+
+export type OperatorRequestPatch = {
+  campaignSlug: string;
+  externalId: string;
+  expectedVersion: number;
+  status?: "draft" | "approved";
+  preflight?: WorkflowPreflight;
+  note?: string;
+  actorId: string;
+};
+
+export type OperatorRequestPatchResult =
+  | { status: "updated"; request: OperatorRequestRow }
+  | { status: "not-found" }
+  | { status: "conflict" };
+
 export type Db = {
   health(): Promise<boolean>;
   campaignTimeline(campaignSlug: string): Promise<TimelineRow[]>;
   findStaffByEmail(email: string): Promise<StaffUser | null>;
   createRequestEvent(event: NewRequestEvent): Promise<CreatedEvent | null>;
+  /** Optional until the additive operator-workflow migration is applied. */
+  listOperatorRequests?(campaignSlug: string): Promise<OperatorRequestRow[]>;
+  patchOperatorRequest?(patch: OperatorRequestPatch): Promise<OperatorRequestPatchResult>;
 };
+
+type OperatorRequestQueryRow = {
+  id: string;
+  campaign_id: string;
+  campaign_title: string;
+  institution: string;
+  filing_method: string;
+  filing_destination: string;
+  status: string;
+  application_fee_cents: number;
+  quoted_fee_cents: number | null;
+  filed_on: string | null;
+  due_on: string | null;
+  operator_notes: string | null;
+  updated_at: Date;
+  version: number;
+  preflight: WorkflowPreflight;
+  activity: { id: string; at: string; message: string }[];
+};
+
+const operatorRequestsQuery = `
+  select r.external_id as id, c.slug as campaign_id, c.title as campaign_title,
+         i.legal_name as institution,
+         fr.submission_kind::text as filing_method,
+         fr.destination as filing_destination,
+         r.status::text as status,
+         fr.application_fee_cents as application_fee_cents,
+         w.quoted_fee_cents as quoted_fee_cents,
+         to_char(w.filed_on, 'YYYY-MM-DD') as filed_on,
+         to_char(w.due_on, 'YYYY-MM-DD') as due_on,
+         coalesce(n.note, '') as operator_notes,
+         coalesce(w.updated_at, r.created_at) as updated_at,
+         coalesce(w.version, 0) as version,
+         coalesce(w.preflight, '{}'::jsonb) as preflight,
+         coalesce(a.activity, '[]'::jsonb) as activity
+  from record_request r
+  join campaign c on c.id = r.campaign_id
+  join institution i on i.id = r.institution_id
+  join institution_filing_route fr on fr.id = r.filing_route_id
+  left join record_request_workflow w on w.record_request_id = r.id
+  left join lateral (
+    select note from operator_note
+    where record_request_id = r.id order by created_at desc, id desc limit 1
+  ) n on true
+  left join lateral (
+    select jsonb_agg(jsonb_build_object(
+      'id', x.id::text, 'at', x.created_at,
+      'message', concat_ws('; ',
+        case when x.detail->>'previousStatus' is distinct from x.detail->>'nextStatus'
+          then 'Status changed to ' || (x.detail->>'nextStatus') end,
+        case when x.detail->>'preflightChanged' = 'true'
+          then 'Preflight checklist updated' end,
+        case when x.detail->>'noteAdded' = 'true'
+          then 'Operator note added' end
+      )
+    ) order by x.created_at asc, x.id asc) as activity
+    from (
+      select id, created_at, detail from audit_event
+      where entity_kind = 'record_request' and entity_id = r.id
+        and action = 'record_request.workflow_update'
+      order by created_at desc, id desc limit 50
+    ) x
+  ) a on true
+  where c.slug = $1 and ($2::text is null or r.external_id = $2)
+  order by i.legal_name
+`;
+
+function mapOperatorRequest(row: OperatorRequestQueryRow): OperatorRequestRow {
+  return {
+    id: row.id,
+    campaignId: row.campaign_id,
+    campaignTitle: row.campaign_title,
+    institution: row.institution,
+    filingMethod: row.filing_method,
+    filingDestination: row.filing_destination,
+    status: row.status,
+    applicationFeeCents: row.application_fee_cents,
+    quotedFeeCents: row.quoted_fee_cents,
+    filedOn: row.filed_on,
+    dueOn: row.due_on,
+    operatorNotes: row.operator_notes ?? "",
+    updatedAt: row.updated_at instanceof Date ? row.updated_at.toISOString() : String(row.updated_at),
+    version: row.version,
+    preflight: row.preflight ?? {},
+    activity: row.activity ?? [],
+  };
+}
 
 const timelineQuery = `
   select e.id as id,
@@ -221,6 +350,125 @@ export function createDbFromConnectionString(connectionString: string): Db {
           ]);
           await client.query("commit");
           return { id: String(row.id), occurredOn: row.occurred_on };
+        } catch (error) {
+          await client.query("rollback");
+          throw error;
+        }
+      });
+    },
+
+    listOperatorRequests(campaignSlug: string) {
+      return withClient(connectionString, async (client) => {
+        const result = await client.query<OperatorRequestQueryRow>(operatorRequestsQuery, [
+          campaignSlug,
+          null,
+        ]);
+        return result.rows.map(mapOperatorRequest);
+      });
+    },
+
+    patchOperatorRequest(patch: OperatorRequestPatch) {
+      return withClient(connectionString, async (client): Promise<OperatorRequestPatchResult> => {
+        await client.query("begin");
+        try {
+          // Backfill a workflow row for requests created after the migration.
+          await client.query(`
+            insert into record_request_workflow (record_request_id)
+            select r.id from record_request r
+            join campaign c on c.id = r.campaign_id
+            where c.slug = $1 and r.external_id = $2
+            on conflict (record_request_id) do nothing
+          `, [patch.campaignSlug, patch.externalId]);
+
+          const locked = await client.query<{
+            id: string;
+            status: string;
+            version: number;
+            preflight: WorkflowPreflight;
+            route_expires_on: string;
+            route_is_current: boolean;
+            fee_status: string;
+            contact_status: string;
+          }>(`
+            select r.id, r.status::text as status, w.version, w.preflight,
+                   to_char(fr.expires_at, 'YYYY-MM-DD') as route_expires_on,
+                   fr.is_current as route_is_current,
+                   fr.fee_status::text as fee_status,
+                   fr.contact_status::text as contact_status
+            from record_request r
+            join campaign c on c.id = r.campaign_id
+            join record_request_workflow w on w.record_request_id = r.id
+            join institution_filing_route fr on fr.id = r.filing_route_id
+            where c.slug = $1 and r.external_id = $2
+            for update of r, w
+          `, [patch.campaignSlug, patch.externalId]);
+          const current = locked.rows[0];
+          if (!current) {
+            await client.query("rollback");
+            return { status: "not-found" };
+          }
+          if (current.version !== patch.expectedVersion) {
+            await client.query("rollback");
+            return { status: "conflict" };
+          }
+          if (patch.status !== undefined && current.status !== "draft" && current.status !== "approved") {
+            await client.query("rollback");
+            return { status: "conflict" };
+          }
+
+          const nextPreflight = patch.preflight ?? current.preflight;
+          if ((patch.status ?? current.status) === "approved" &&
+              (patch.status !== undefined || patch.preflight !== undefined)) {
+            const today = new Date().toISOString().slice(0, 10);
+            const complete = ["route", "fee", "wording", "enclosures"].every(
+              (key) => nextPreflight[key as keyof WorkflowPreflight] === true,
+            );
+            if (!complete || nextPreflight.routeConfirmedOn !== today ||
+                nextPreflight.feeConfirmedOn !== today ||
+                !current.route_is_current ||
+                current.route_expires_on < today ||
+                current.fee_status !== "verified" ||
+                current.contact_status !== "verified") {
+              await client.query("rollback");
+              return { status: "conflict" };
+            }
+          }
+
+          if (patch.status !== undefined) {
+            await client.query("update record_request set status = $2::request_status where id = $1::bigint", [
+              current.id,
+              patch.status,
+            ]);
+          }
+          await client.query(`
+            update record_request_workflow
+            set preflight = $2::jsonb, version = version + 1, updated_at = now()
+            where record_request_id = $1::bigint
+          `, [current.id, JSON.stringify(nextPreflight)]);
+          if (patch.note !== undefined) {
+            await client.query(`
+              insert into operator_note (record_request_id, author_id, note)
+              values ($1::bigint, $2::bigint, $3)
+            `, [current.id, patch.actorId, patch.note]);
+          }
+          await client.query(`
+            insert into audit_event (actor_id, action, entity_kind, entity_id, detail)
+            values ($1::bigint, 'record_request.workflow_update', 'record_request', $2::bigint, $3::jsonb)
+          `, [patch.actorId, current.id, JSON.stringify({
+            previousStatus: current.status,
+            nextStatus: patch.status ?? current.status,
+            preflightChanged: patch.preflight !== undefined,
+            noteAdded: patch.note !== undefined,
+            previousVersion: current.version,
+            nextVersion: current.version + 1,
+          })]);
+
+          const result = await client.query<OperatorRequestQueryRow>(operatorRequestsQuery, [
+            patch.campaignSlug,
+            patch.externalId,
+          ]);
+          await client.query("commit");
+          return { status: "updated", request: mapOperatorRequest(result.rows[0]) };
         } catch (error) {
           await client.query("rollback");
           throw error;

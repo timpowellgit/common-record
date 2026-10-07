@@ -108,8 +108,7 @@ export function createAccessAuth(config: AccessConfig): OperatorAuth {
 
       const header = decodeSegment<{ kid?: string; alg?: string }>(headerSegment);
       const claims = decodeSegment<AccessClaims>(payloadSegment);
-      if (!header?.kid || !claims) return null;
-      if (header.alg && header.alg !== "RS256") return null;
+      if (!header?.kid || !claims || header.alg !== "RS256") return null;
 
       let keys: Jwk[];
       try {
@@ -135,8 +134,8 @@ export function createAccessAuth(config: AccessConfig): OperatorAuth {
       if (!valid) return null;
 
       const now = Math.floor(Date.now() / 1000);
-      if (typeof claims.exp === "number" && claims.exp <= now) return null;
-      if (typeof claims.nbf === "number" && claims.nbf > now) return null;
+      if (typeof claims.exp !== "number" || !Number.isFinite(claims.exp) || claims.exp <= now) return null;
+      if (claims.nbf !== undefined && (typeof claims.nbf !== "number" || claims.nbf > now)) return null;
       if (claims.iss !== issuer) return null;
 
       const tokenAudience = claims.aud;

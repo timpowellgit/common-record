@@ -97,6 +97,11 @@ reproducible. Until then, this file is the record.
 
 ## Outstanding
 
+- Provision and verify a staff row for the actual Access identity before
+  activating the new dashboard; the seed still uses an example email.
+- Review/apply `db/migrations/0001_operator_workflow.sql` and verify an
+  isolated restore before activating versioned request edits. Neither has
+  happened in production.
 - Rotate the Cloudflare API token and Neon key (both were shared in chat).
 - Confirm `.ca` auto-renew.
 - Custom-domain bootstrap for CI: `deploy-api.yml` relies on the custom domains

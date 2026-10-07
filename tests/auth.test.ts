@@ -12,8 +12,11 @@ function encode(value: object): string {
   return Buffer.from(JSON.stringify(value)).toString("base64url");
 }
 
-async function makeToken(overrides: Record<string, unknown> = {}): Promise<string> {
-  const header = encode({ alg: "RS256", kid: "test-kid", typ: "JWT" });
+async function makeToken(
+  overrides: Record<string, unknown> = {},
+  headerOverrides: Record<string, unknown> = {},
+): Promise<string> {
+  const header = encode({ alg: "RS256", kid: "test-kid", typ: "JWT", ...headerOverrides });
   const payload = encode({
     email: "tim@commonrecord.example",
     sub: "access-subject",
@@ -80,6 +83,16 @@ describe("Cloudflare Access verification", () => {
 
   it("rejects an expired token", async () => {
     const token = await makeToken({ exp: Math.floor(Date.now() / 1000) - 10 });
+    expect(await auth.authenticate(requestWith(token))).toBeNull();
+  });
+
+  it("rejects a signed token with no expiry or algorithm", async () => {
+    expect(await auth.authenticate(requestWith(await makeToken({ exp: undefined })))).toBeNull();
+    expect(await auth.authenticate(requestWith(await makeToken({}, { alg: undefined })))).toBeNull();
+  });
+
+  it("rejects a token that is not valid yet", async () => {
+    const token = await makeToken({ nbf: Math.floor(Date.now() / 1000) + 600 });
     expect(await auth.authenticate(requestWith(token))).toBeNull();
   });
 

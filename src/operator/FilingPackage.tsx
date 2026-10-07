@@ -17,6 +17,7 @@ type FilingPackageProps = {
   planRequest: FilingRequest | undefined;
   onPreflightChange: (preflight: PreflightState) => void;
   onPublicUpdate: (title: string) => void;
+  allowPrinting?: boolean;
 };
 
 function submissionSummary(planRequest: FilingRequest) {
@@ -44,6 +45,7 @@ export function FilingPackage({
   planRequest,
   onPreflightChange,
   onPublicUpdate,
+  allowPrinting = true,
 }: FilingPackageProps) {
   const [requester, setRequester] = useState<RequesterDetails>(emptyRequesterDetails);
   const [showLetter, setShowLetter] = useState(false);
@@ -60,7 +62,9 @@ export function FilingPackage({
     );
   }
 
-  const submission = submissionSummary(planRequest);
+  const submission = allowPrinting
+    ? submissionSummary(planRequest)
+    : { route: request.filingMethod, destination: request.filingDestination };
   const preflight: PreflightState = request.preflight ?? {};
   const today = localToday();
   const routeResearchCurrent = planRequest.routeStatus === "verified" &&
@@ -79,9 +83,10 @@ export function FilingPackage({
         <fieldset className="operator-preflight">
           <legend>Preflight checklist</legend>
           <p className="operator-package-note">
-            Every check must be completed before the request letter can be
-            printed. Route and fee confirmations are valid for today only.
+            Every check must be completed before approval. Route and fee
+            confirmations are valid for today only.
           </p>
+          {!allowPrinting && <p className="operator-package-note">The route below comes from the database. The linked research is a bundled reference draft; check the official source before confirming anything.</p>}
           <p className="operator-package-note">
             Route research checked {planRequest.verifiedOn}; review due {planRequest.expiresOn}.{" "}
             <a href={planRequest.sourceUrl} target="_blank" rel="noreferrer">
@@ -126,7 +131,7 @@ export function FilingPackage({
           </p>
         </fieldset>
 
-        <fieldset className="operator-requester">
+        {allowPrinting && <fieldset className="operator-requester">
           <legend>Requester details (private)</legend>
           <p className="operator-package-note">
             Used only to build the printed letter. These fields are never saved
@@ -169,10 +174,10 @@ export function FilingPackage({
               }
             />
           </label>
-        </fieldset>
+        </fieldset>}
       </div>
 
-      <div className="operator-package-actions">
+      {allowPrinting ? <div className="operator-package-actions">
         <button type="button" disabled={!ready} onClick={() => setShowLetter(filingPackageReady(preflight, requester, planRequest, localToday()))}>
           Print request letter
         </button>
@@ -183,11 +188,11 @@ export function FilingPackage({
               : "Verify or refresh route research before printing."}
           </span>
         )}
-      </div>
+      </div> : <p className="operator-package-note">Printing is disabled on the live staff site until request letters and filing routes come from the current server record. This checklist does not submit anything.</p>}
 
       <PublishEventForm
         campaignId={request.campaignId}
-        requestRef={request.institution}
+        requestRef={request.id}
         onPublished={onPublicUpdate}
       />
 
