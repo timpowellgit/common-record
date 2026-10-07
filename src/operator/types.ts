@@ -32,6 +32,7 @@ export type OperatorRequest = {
   dueAt: string | null;
   operatorNotes: string;
   updatedAt: string;
+  version?: number;
   activity: RequestActivity[];
   preflight?: PreflightState;
 };

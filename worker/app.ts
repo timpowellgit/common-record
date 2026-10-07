@@ -1,14 +1,15 @@
 import { Hono } from "hono";
 import { publicTimelineEventTypes } from "../src/domain/timeline";
 import type { OperatorAuth, OperatorIdentity } from "./auth";
-import type { Db } from "./db";
+import type { Db, StaffUser } from "./db";
+import { createRequestApi } from "./request-api";
 
 export type AppDeps = {
   db: Db | null;
   operatorAuth: OperatorAuth;
 };
 
-type AppEnv = { Variables: { operator: OperatorIdentity } };
+type AppEnv = { Variables: { operator: OperatorIdentity; staff: StaffUser } };
 
 const slugPattern = /^[a-z0-9][a-z0-9-]{0,79}$/;
 const eventTypePattern = /^[a-z][a-z0-9-]{1,40}$/;
@@ -16,6 +17,7 @@ const datePattern = /^\d{4}-\d{2}-\d{2}$/;
 
 const publicEventTypes = new Set<string>(publicTimelineEventTypes);
 const privateOnlyEventTypes = new Set<string>(["note"]);
+const operatorRoles = new Set(["operator", "administrator"]);
 
 function isRealDate(value: string): boolean {
   if (!datePattern.test(value)) return false;
@@ -57,6 +59,7 @@ export function createApp({ db, operatorAuth }: AppDeps) {
   const operator = new Hono<AppEnv>();
 
   operator.use("*", async (c, next) => {
+    c.header("Cache-Control", "no-store");
     if (!db) {
       return c.json({ error: "Operator API is not configured." }, 503);
     }
@@ -64,9 +67,26 @@ export function createApp({ db, operatorAuth }: AppDeps) {
     if (!identity) {
       return c.json({ error: "Operator access required." }, 401);
     }
+    let staff: StaffUser | null;
+    try {
+      staff = await db.findStaffByEmail(identity.email);
+    } catch {
+      return c.json({ error: "Staff access is temporarily unavailable." }, 503);
+    }
+    if (!staff || !operatorRoles.has(staff.role)) {
+      return c.json({ error: "Your account is not authorized for operator access." }, 403);
+    }
     c.set("operator", identity);
+    c.set("staff", staff);
     await next();
   });
+
+  operator.get("/session", (c) => {
+    const staff = c.get("staff");
+    return c.json({ staff: { displayName: staff.displayName, role: staff.role } });
+  });
+
+  operator.get("/login", (c) => c.redirect(new URL("/#/operator", c.req.url).toString(), 302));
 
   operator.post("/campaigns/:slug/events", async (c) => {
     const slug = c.req.param("slug");
@@ -124,12 +144,8 @@ export function createApp({ db, operatorAuth }: AppDeps) {
       recordRequestExternalId = input.requestRef;
     }
 
-    const identity = c.get("operator");
+    const staff = c.get("staff");
     try {
-      const staff = await db!.findStaffByEmail(identity.email);
-      if (!staff) {
-        return c.json({ error: "Your account is not a Common Record operator." }, 403);
-      }
       const created = await db!.createRequestEvent({
         campaignSlug: slug,
         recordRequestExternalId,
@@ -153,6 +169,7 @@ export function createApp({ db, operatorAuth }: AppDeps) {
     }
   });
 
+  operator.route("/", createRequestApi({ db, operatorAuth }));
   app.route("/api/operator", operator);
 
   app.all("/api/*", (c) => c.json({ error: "Unknown API route." }, 404));

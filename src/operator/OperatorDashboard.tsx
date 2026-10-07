@@ -44,7 +44,7 @@ export function OperatorDashboard({
   initialRequests = demoOperatorRequests,
   storageKey,
 }: OperatorDashboardProps) {
-  const { requests, updateRequest, resetRequests } = useOperatorRequests(
+  const { requests, updateRequest, resetRequests, reloadRequests, mode, error, pendingId } = useOperatorRequests(
     initialRequests,
     storageKey,
   );
@@ -60,6 +60,7 @@ export function OperatorDashboard({
     const map = new Map<string, (typeof demoNursingAgencyFilingPlan.requests)[number]>();
     for (const planRequest of demoNursingAgencyFilingPlan.requests) {
       map.set(planRequest.id, planRequest);
+      map.set(planRequest.institutionName, planRequest);
     }
     return map;
   }, []);
@@ -68,18 +69,20 @@ export function OperatorDashboard({
     <section className="operator-shell" aria-labelledby="operator-title">
       <header className="operator-header">
         <div>
-          <p className="operator-eyebrow">Private workflow prototype</p>
+          <p className="operator-eyebrow">{mode === "demo" ? "Private workflow prototype" : "Staff workflow"}</p>
           <h1 id="operator-title">Request operations</h1>
-          <p>
-            Request edits stay in this browser. Timeline updates try the
-            authenticated API and can fall back to local storage. Nothing here
-            files a request, sends a message, or collects a fee.
-          </p>
+          <p>{mode === "demo"
+            ? "Request edits stay in this browser. Timeline updates try the authenticated API. Nothing here files a request, sends a message, or collects a fee."
+            : "Request drafts and preflight checks are saved to the server after confirmation. Nothing here files a request, sends a message, or collects a fee."}</p>
         </div>
-        <button className="operator-reset" type="button" onClick={resetRequests}>
-          Reset demo data
-        </button>
+        {mode === "demo" && <button className="operator-reset" type="button" onClick={resetRequests}>Reset demo data</button>}
       </header>
+
+      {mode === "loading" && <p role="status">Loading the current request records…</p>}
+      {error && <p className="operator-gate-error" role="alert">{error}</p>}
+      {mode === "error" && <button type="button" onClick={() => void reloadRequests()}>Retry loading requests</button>}
+
+      {(mode === "demo" || mode === "server") && <>
 
       <div className="operator-summary" aria-label="Request summary">
         <strong>{requests.length}</strong> requests ·{" "}
@@ -153,16 +156,19 @@ export function OperatorDashboard({
                 Status
                 <select
                   value={request.status}
+                  disabled={pendingId === request.id || (mode === "server" && request.status !== "draft" && request.status !== "approved")}
                   onChange={(event) => {
                     const status = event.target.value as RequestStatus;
-                    updateRequest(
+                    void updateRequest(
                       request.id,
                       { status },
                       `Status changed to ${statusLabels[status]}.`,
                     );
                   }}
                 >
-                  {requestStatuses.map((status) => (
+                  {(mode === "demo" || (request.status !== "draft" && request.status !== "approved")
+                    ? requestStatuses
+                    : requestStatuses.filter((status) => status === "draft" || status === "approved")).map((status) => (
                     <option key={status} value={status}>
                       {statusLabels[status]}
                     </option>
@@ -177,9 +183,10 @@ export function OperatorDashboard({
                   step="0.01"
                   value={request.quotedFee ?? ""}
                   placeholder="None"
+                  disabled={mode !== "demo"}
                   onChange={(event) => {
                     const nextValue = event.target.value;
-                    updateRequest(
+                    void updateRequest(
                       request.id,
                       { quotedFee: nextValue === "" ? null : Number(nextValue) },
                       nextValue === ""
@@ -194,8 +201,9 @@ export function OperatorDashboard({
                 <input
                   type="date"
                   value={request.filedAt ?? ""}
+                  disabled={mode !== "demo"}
                   onChange={(event) =>
-                    updateRequest(
+                    void updateRequest(
                       request.id,
                       { filedAt: event.target.value || null },
                       "Filed date updated.",
@@ -208,8 +216,9 @@ export function OperatorDashboard({
                 <input
                   type="date"
                   value={request.dueAt ?? ""}
+                  disabled={mode !== "demo"}
                   onChange={(event) =>
-                    updateRequest(
+                    void updateRequest(
                       request.id,
                       { dueAt: event.target.value || null },
                       "Due date updated.",
@@ -219,32 +228,26 @@ export function OperatorDashboard({
               </label>
             </div>
 
-            <label className="operator-notes">
+            {mode === "demo" ? <label className="operator-notes">
               Operator notes
-              <textarea
-                value={request.operatorNotes}
-                onChange={(event) =>
-                  updateRequest(
-                    request.id,
-                    { operatorNotes: event.target.value },
-                    "Operator notes updated.",
-                  )
-                }
-              />
-            </label>
+              <textarea value={request.operatorNotes} onChange={(event) =>
+                void updateRequest(request.id, { operatorNotes: event.target.value }, "Operator notes updated.")
+              } />
+            </label> : <OperatorNoteEditor request={request} disabled={pendingId === request.id} onSave={(note) => updateRequest(request.id, { operatorNotes: note }, "Operator note added.")} />}
 
             <FilingPackage
               request={request}
-              planRequest={planRequestById.get(request.id)}
+              planRequest={planRequestById.get(request.id) ?? planRequestById.get(request.institution)}
+              allowPrinting={mode === "demo"}
               onPreflightChange={(preflight) =>
-                updateRequest(
+                void updateRequest(
                   request.id,
                   { preflight },
                   "Filing package preflight updated.",
                 )
               }
               onPublicUpdate={(title) =>
-                updateRequest(
+                void updateRequest(
                   request.id,
                   {},
                   `Public timeline update published: ${title}`,
@@ -253,7 +256,7 @@ export function OperatorDashboard({
             />
 
             <details className="operator-history">
-              <summary>Local activity ({request.activity.length})</summary>
+              <summary>{mode === "demo" ? "Local activity" : "Recorded activity"} ({request.activity.length})</summary>
               <ol>
                 {request.activity.map((event) => (
                   <li key={event.id}>
@@ -266,6 +269,29 @@ export function OperatorDashboard({
           </article>
         ))}
       </div>
+      </>}
     </section>
   );
+}
+
+function OperatorNoteEditor({
+  request,
+  disabled,
+  onSave,
+}: {
+  request: OperatorRequest;
+  disabled: boolean;
+  onSave: (note: string) => Promise<boolean>;
+}) {
+  const [note, setNote] = useState("");
+  return <div className="operator-notes">
+    <p><strong>Operator notes</strong></p>
+    <p>{request.operatorNotes || "No notes yet."}</p>
+    <label>Add a note
+      <textarea value={note} disabled={disabled} onChange={(event) => setNote(event.target.value)} />
+    </label>
+    <button type="button" disabled={disabled || !note.trim()} onClick={() => {
+      void onSave(note.trim()).then((saved) => { if (saved) setNote(""); });
+    }}>Save note</button>
+  </div>;
 }

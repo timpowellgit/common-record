@@ -44,8 +44,8 @@ Completed foundations:
   the browser's demo passcode a production staff login.
 - [x] **Visual direction selected and applied to the static public site** —
   Civic Magazine, gallery concept 20, now shapes the homepage and campaign
-  index. The existing campaign detail panel uses the new palette but remains
-  prototype content; the live Worker awaits a separately approved deployment.
+  index and is deployed on `commonrecord.ca`. The campaign detail panel still
+  contains clearly labelled prototype contribution and proposal interactions.
 - [x] **Filing-package preflight tightened** — printing requires same-day
   route and fee confirmations, plus current verified route research with an
   official source link and review date. This is a local supervised gate, not
@@ -53,12 +53,14 @@ Completed foundations:
 
 In progress:
 
-- [~] **Durable operator workflow** — the event form attempts the guarded API,
-  but falls back to browser storage when unavailable. Request edits, preflight
-  state, and operator notes still live locally. Staff identity and permissions
-  are not integrated into the dashboard.
-- [~] **Database-backed public site** — the timeline is live; campaign
-  discovery, budgets, proposal and contribution interactions remain prototype
+- [~] **Durable operator workflow** — a server-checked Access gate, role checks,
+  versioned request API, audit-backed notes and preflight state, and a matching
+  dashboard client are implemented locally. The additive migration is proven
+  on scratch PostgreSQL, not applied to Neon; the real Access email is not yet
+  a provisioned staff account. Production remains on the previously deployed
+  code until this work is reviewed and activated.
+- [~] **Database-backed public site** — the timeline is live and authoritative;
+  campaign discovery, budgets, proposal and contribution interactions remain prototype
   data or local UI. The static Pages gallery is not the live data source.
 
 Not started: file storage and scanning, payments, transactional email,
@@ -417,33 +419,25 @@ French UI alone is not Quebec operational readiness. Before Quebec campaigns lau
 The next sprint connects the selected public design to the operational spine
 already deployed. Deliverables are ordered so each can be reviewed separately:
 
-1. **Finish Civic Magazine on the production experience.** The homepage and
-   campaign index now use concept 20's typography and responsive layout in
-   source and the static Pages deployment. Carry it into the pilot's detail
-   view and the approved Worker deployment; keep campaign state and prototype
-   contribution behavior truthful.
-2. **Make the production boundary visible.** Distinguish database-backed
-   timeline events from local demo events on public pages. Source selection is
-   now coded so database events replace the local prototype timeline when the
-   API responds; confirm it after the Worker deployment. Keep prototype
-   proposal and contribution interactions clearly labeled and confirm the
-   static gallery does not become an alternate operational surface.
-3. **Complete staff access before durable edits.** Put the operator dashboard
-   behind server-enforced Access and role checks, remove the demo passcode from
-   the production route, and make unauthorized and expired sessions fail
-   closed. Verify an authorized staff member can reach the existing event API
-   while an unauthenticated request cannot.
-4. **Persist the five-request workflow.** Read and write request status,
-   preflight checks, notes and event history through the database with audit
-   records and validation. Keep requester contact details in private storage
-   only when an explicit retention design is approved; until then, preserve
-   the current tab-only print flow.
-5. **Verify production publishing end to end.** The code now makes a failed
+1. **Civic Magazine and truthful public boundary — deployed.** The selected
+   design and authoritative database timeline are live; the two timeline
+   events were verified once each. Proposal and contribution interactions are
+   still explicitly labelled as prototypes.
+2. **Staff access — coded, not activated.** Deploy the server-enforced Access
+   and role gate only after provisioning the correct staff identity. Verify
+   authorized, unauthorized and expired sessions against production.
+3. **Five-request workflow — coded, not activated.** Review and apply
+   `db/migrations/0001_operator_workflow.sql`, then deploy the versioned
+   request API and dashboard client. Requester contact details remain tab-only
+   in the local prototype; live printing is disabled until server-backed route
+   and letter generation are ready.
+4. **Verify production publishing end to end.** The code now makes a failed
    API write show failure instead of a local success on production hosts.
    After deployment, test successful writes, retries, unauthorized writes,
    private-field rejection, and cross-browser visibility of an approved event.
-6. **Prove recovery and pilot readiness.** Add a database restore drill,
-   verify five filing packages against current official routes and fees, and
+5. **Prove recovery and pilot readiness.** A non-destructive restore runbook
+   and read-only smoke check now exist; complete an approved isolated branch
+   drill, then verify five filing packages against current official routes and fees, and
    document who approves filing, redaction and public updates. Keep actual
    submission and payment behind Tim's separate authorization.
 
