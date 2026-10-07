@@ -1,0 +1,11 @@
+# Migration target only. Do not copy this into the Terraform root while the
+# pg backend remains in versions.tf, and do not run init -migrate-state until
+# the independent HCP workspace and an encrypted recovery copy are verified.
+terraform {
+  cloud {
+    organization = "REPLACE_WITH_PERSONAL_HCP_ORGANIZATION"
+    workspaces {
+      name = "common-record-neon-production"
+    }
+  }
+}

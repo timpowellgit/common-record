@@ -16,8 +16,9 @@ This first version is deliberately small. It demonstrates:
 - a public-question proposal form;
 - a working supervised filing-plan generator for five Ontario hospitals;
 - a public campaign timeline fed only by operator-approved events;
-- a passcode-gated operator screen (unlinked from the public site) for
-  tracking requests, printing filing packages, and publishing timeline updates;
+- an unlinked operator screen for tracking requests, printing filing packages,
+  and publishing timeline updates; production uses Cloudflare Access and a
+  staff database record, while local/Pages previews use a demo passcode;
 - a responsive Civic Magazine public design, chosen from the design archive;
 - English/French message infrastructure for the public timeline;
 - a Cloudflare Worker serving a read-only public timeline API backed by
@@ -27,9 +28,11 @@ The pilot research uses current official filing instructions and is documented i
 [`docs/pilot-campaign-agency-nursing.md`](docs/pilot-campaign-agency-nursing.md).
 The Phase 0 database schema and seed data live in
 [`db/`](db/README.md); it is deployed to Neon and served through the Cloudflare
-Worker. `infra/neon` manages the Neon project with Terraform. See
+Worker. `infra/neon` describes the Neon project in Terraform; its current state
+backend still needs migration to independent storage. See
 [`docs/production-inventory.md`](docs/production-inventory.md) for what is
-provisioned and where each secret lives. Routes and fees must still be
+provisioned, and [`docs/secret-and-iac-setup.md`](docs/secret-and-iac-setup.md)
+for the prepared 1Password and state migration plan. Routes and fees must still be
 re-verified immediately before any real filing.
 
 The phased path to a production service—including real payments, live request
@@ -41,9 +44,10 @@ and the production platform recommendation is in
 
 ## Operator access
 
-The operator workflow is unlinked from the public site. Open `#/operator`
-directly and use the demo passcode `pilot-2026`. The gate is a workflow
-boundary, not security; see
+The operator workflow is unlinked from the public site. On production, open
+`#/operator` and sign in with Cloudflare Access; the dashboard still requires
+a matching staff record and a pending migration before staff editing works.
+The demo passcode `pilot-2026` applies only to local and GitHub Pages previews; see
 [`docs/operator-workflow-and-deployment.md`](docs/operator-workflow-and-deployment.md).
 
 ## Run locally
@@ -71,11 +75,12 @@ npm run build
 ## Product boundary
 
 This repository contains a front-end prototype, a database-backed public
-timeline API, and an Access-gated operator event endpoint. It does not collect
+timeline API, and Access-gated operator endpoints. It does not collect
 payments, retain public form submissions, or send public-records requests.
-The operator dashboard still uses a demo passcode and stores request edits in
-the browser; approved timeline events can reach the database through the
-operator API. A failed production write is not shown as published; local event
+The production operator dashboard fails closed until a real staff record exists;
+durable request edits also await the pending database migration. Local previews
+use a demo passcode and browser-only request edits. Approved timeline events
+can reach the database through the operator API. A failed production write is not shown as published; local event
 fallback is limited to the static prototype and local development. The print flow
 requires current official route research and same-day route and fee checks;
 requester details stay in the open tab and are never saved.
