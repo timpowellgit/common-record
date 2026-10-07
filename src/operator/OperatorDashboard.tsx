@@ -71,9 +71,9 @@ export function OperatorDashboard({
           <p className="operator-eyebrow">Private workflow prototype</p>
           <h1 id="operator-title">Request operations</h1>
           <p>
-            Changes stay in this browser, including published timeline updates
-            until the production database exists. Nothing here files a request,
-            sends a message, or collects a fee.
+            Request edits stay in this browser. Timeline updates try the
+            authenticated API and can fall back to local storage. Nothing here
+            files a request, sends a message, or collects a fee.
           </p>
         </div>
         <button className="operator-reset" type="button" onClick={resetRequests}>

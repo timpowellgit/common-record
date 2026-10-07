@@ -83,6 +83,22 @@ describe("generateFilingPlan", () => {
       "Invalid application fee for University Health Network.",
     );
   });
+
+  it("carries dated official route evidence into each filing package", () => {
+    const plan = generateFilingPlan(nursingAgencySpendingCampaign, ontarioHospitalInstitutions);
+    for (const request of plan.requests) {
+      expect(request.sourceUrl).toMatch(/^https:\/\//);
+      expect(request.verifiedOn).toBe("2026-10-05");
+      expect(request.expiresOn).toBe("2026-11-04");
+      expect(request.routeStatus).toBe("verified");
+      expect(request.feeStatus).toBe("verified");
+    }
+
+    expect(() => generateFilingPlan(nursingAgencySpendingCampaign, [{
+      ...ontarioHospitalInstitutions[0],
+      expiresOn: "2026-10-05",
+    }])).toThrow("Invalid route verification evidence for University Health Network.");
+  });
 });
 
 describe("buildRequestBody", () => {

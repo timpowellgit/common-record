@@ -34,7 +34,7 @@ const campaigns: Campaign[] = [
     institutions: demoNursingAgencyFilingPlan.totals.requestCount,
     accent: "coral",
     status: "pilot",
-    lead: "Proposed with a health-policy researcher",
+    lead: "Common Record pilot",
     output: "A normalized CSV, request archive, methodology, and plain-language findings note.",
   },
   {
@@ -50,7 +50,7 @@ const campaigns: Campaign[] = [
     institutions: 8,
     accent: "yellow",
     status: "concept",
-    lead: "Community proposal",
+    lead: "Exploratory concept",
     output: "A city-by-city comparison, source documents, and reusable emergency-planning dataset.",
   },
   {
@@ -66,7 +66,7 @@ const campaigns: Campaign[] = [
     institutions: 4,
     accent: "blue",
     status: "concept",
-    lead: "Parent-led proposal",
+    lead: "Exploratory concept",
     output: "A school-level repair dataset with project status, estimated cost, and record provenance.",
   },
 ];
@@ -98,16 +98,15 @@ function Progress({ campaign }: { campaign: Campaign }) {
 
 function CampaignCard({ campaign, onOpen }: { campaign: Campaign; onOpen: () => void }) {
   return (
-    <article className={`campaign-card ${campaign.accent}`} onClick={onOpen}>
+    <article className={`campaign-card ${campaign.accent}`}>
       <div className="card-topline">
         <span>{campaign.eyebrow}</span>
         <span className={`status ${campaign.status}`}>{campaign.status}</span>
       </div>
       <h3>{campaign.title}</h3>
       <p>{campaign.summary}</p>
-      <Progress campaign={campaign} />
       <div className="card-foot">
-        <span>{campaign.supporters} contributors</span>
+        <span>{campaign.status === "pilot" ? `${campaign.institutions} requests · ${money.format(campaign.goal)} estimated fees` : "Early concept · scope not confirmed"}</span>
         <button type="button" onClick={onOpen} aria-label={`View ${campaign.title}`}>
           <ArrowIcon />
         </button>
@@ -161,58 +160,47 @@ function App() {
   }
 
   return (
-    <div className="app-shell">
-      <header className="site-header">
+    <div className="app-shell civic-site">
+      <header className="site-header civic-header">
         <a className="brand" href="#top" aria-label="Common Record home">
-          <span className="brand-mark">CR</span>
           <span>Common Record</span>
         </a>
         <nav aria-label="Main navigation">
-          <a href="#campaigns">Campaigns</a>
-          <a href="#how-it-works">How it works</a>
+          <a href="#campaigns">Questions</a>
+          <a href="#how-it-works">The method</a>
           <button className="text-button" type="button" onClick={() => setShowProposal(true)}>
-            Propose a question
+            Propose a question ↗
           </button>
         </nav>
       </header>
 
       <main id="top">
-        <section className="hero">
-          <div className="hero-copy">
-            <p className="kicker">Public information, collectively commissioned.</p>
-            <h1>Fund the questions.<br /><em>Open the answers.</em></h1>
-            <p className="hero-intro">
-              Chip in a few dollars with your neighbours. We turn public questions into precise records requests—and messy releases into useful, permanent datasets.
-            </p>
-            <div className="hero-actions">
-              <a className="button primary" href="#campaigns">Explore campaigns <ArrowIcon /></a>
-              <button className="button secondary" type="button" onClick={() => setShowProposal(true)}>Propose yours</button>
-            </div>
+        <section className="civic-cover" aria-labelledby="cover-title">
+          <div className="civic-cover-lead">
+            <p className="civic-label">Issue 01 / Access to information</p>
+            <h1 id="cover-title">Who has<br />the records<br />we need?</h1>
+            <p>Common Record turns shared questions into public evidence.</p>
           </div>
-          <div className="hero-art" aria-label="Illustration of many contributions becoming an open record">
-            <div className="question-card">
-              <span className="mini-label">A public question</span>
-              <strong>Who has the records<br />we need?</strong>
-              <div className="avatars"><i>T</i><i>A</i><i>M</i><i>+326</i></div>
-            </div>
-            <div className="line one" />
-            <div className="line two" />
-            <div className="record-stamp">OPEN<br />RECORD</div>
-            <div className="dot-grid" />
+          <div className="civic-cover-feature">
+            <p className="civic-label">The first campaign / Ontario</p>
+            <h2>{campaigns[0].title}</h2>
+            <p>{campaigns[0].summary}</p>
+            <button type="button" onClick={() => setSelected(campaigns[0])}>Read the campaign <ArrowIcon /></button>
           </div>
         </section>
-
-        <section className="trust-strip" aria-label="Project principles">
-          <span>Every dollar traceable</span><b>•</b><span>Every request public</span><b>•</b><span>Every dataset reusable</span>
+        <section className="civic-cover-notes" aria-label="First campaign facts">
+          <div><strong>5</strong><span>tailored requests</span></div>
+          <div><strong>$25</strong><span>estimated initial filing fees</span></div>
+          <div><strong>CSV</strong><span>planned public output</span></div>
         </section>
 
         <section className="campaign-section" id="campaigns">
           <div className="section-heading">
             <div>
-            <p className="kicker">Prototype campaign board · no money collected</p>
-              <h2>What should the public know?</h2>
+              <p className="civic-label">The question desk / 01—03</p>
+              <h2>Questions worth<br />putting on record.</h2>
             </div>
-            <p>Interest shows demand. Contributions pay for filing, follow-up, and turning records into something people can actually use.</p>
+            <p>One researched pilot and two early ideas. Each answer should come with its sources, gaps and a dataset others can use.</p>
           </div>
           <div className="campaign-grid">
             {campaigns.map((campaign) => (
@@ -223,28 +211,29 @@ function App() {
 
         <section className="process-section" id="how-it-works">
           <div className="process-intro">
-            <p className="kicker light">From curiosity to commons</p>
-            <h2>One question.<br />Many records.<br />A public answer.</h2>
+            <p className="civic-label">The method</p>
+            <h2>Show the work.<br />Share the result.</h2>
+            <p>Every step of a request should be understandable to the people it serves.</p>
           </div>
           <ol className="steps">
-            <li><span>01</span><div><h3>Propose</h3><p>Describe what is missing and why it matters.</p></div></li>
-            <li><span>02</span><div><h3>Fund</h3><p>People signal interest and share the real acquisition cost.</p></div></li>
-            <li><span>03</span><div><h3>Request</h3><p>Tailored requests are prepared, checked, filed, and tracked.</p></div></li>
-            <li><span>04</span><div><h3>Publish</h3><p>Records, costs, gaps, and a clean dataset become public.</p></div></li>
+            <li><span>01</span><div><h3>Define the question</h3><p>Choose useful records and verify who holds them.</p></div></li>
+            <li><span>02</span><div><h3>Show the plan</h3><p>Publish the scope, likely costs and intended output.</p></div></li>
+            <li><span>03</span><div><h3>Request the records</h3><p>File with human approval and document the response.</p></div></li>
+            <li><span>04</span><div><h3>Open the answer</h3><p>Share source files, gaps and comparable data.</p></div></li>
           </ol>
         </section>
 
         <section className="closing-section">
-          <p className="kicker">Have a stubborn public question?</p>
-          <h2>It might be a campaign.</h2>
-          <button className="button primary dark" type="button" onClick={() => setShowProposal(true)}>Tell us about it <ArrowIcon /></button>
+          <p className="civic-label">Have a stubborn public question?</p>
+          <h2>Let's put it<br />on record.</h2>
+          <button type="button" onClick={() => setShowProposal(true)}>Propose a question <ArrowIcon /></button>
         </section>
       </main>
 
       <footer>
-        <div className="brand"><span className="brand-mark">CR</span><span>Common Record</span></div>
-        <p>A working concept for better access to public information in Canada.</p>
-        <span>Ontario · 2026 · <a href="?view=mockups">Design mockups</a></span>
+        <div className="brand">Common Record</div>
+        <p>A working public-information project. No money collected and no requests filed through this site.</p>
+        <span><a href="?view=mockups&concept=magazine">Design archive</a></span>
       </footer>
 
       {selected && (
@@ -291,7 +280,7 @@ function App() {
             <label>Why it matters<textarea required placeholder="Who would use the answer, and how?" /></label>
             <label>Your email<input required type="email" placeholder="you@example.ca" /></label>
             <button className="button primary wide" type="submit">Save proposal</button>
-            <p className="prototype-note">Demo form—your information stays in this browser session.</p>
+            <p className="prototype-note">Demo form—nothing is sent or saved.</p>
           </form>
         </div>
       )}
@@ -306,7 +295,7 @@ function App() {
               {[1, 5, 10, 25].map((value) => <button className={amount === value ? "active" : ""} type="button" key={value} onClick={() => setAmount(value)}>${value}</button>)}
             </div>
             <p>Your <strong>{money.format(amount)}</strong> demo contribution helps cover filing and records-processing costs.</p>
-            <button className="button primary wide" type="button" onClick={() => { setShowContribution(false); setSelected(null); notify("Demo contribution recorded. No payment was collected."); }}>Continue</button>
+            <button className="button primary wide" type="button" onClick={() => { setShowContribution(false); setSelected(null); notify("Demo contribution preview complete. No payment was collected."); }}>Continue</button>
             <p className="prototype-note">No account or payment required in this prototype.</p>
           </div>
         </div>

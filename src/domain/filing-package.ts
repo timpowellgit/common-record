@@ -21,7 +21,10 @@ export const preflightChecks = [
 
 export type PreflightCheckId = (typeof preflightChecks)[number]["id"];
 
-export type PreflightState = Partial<Record<PreflightCheckId, boolean>>;
+export type PreflightState = Partial<Record<PreflightCheckId, boolean>> & {
+  routeConfirmedOn?: string;
+  feeConfirmedOn?: string;
+};
 
 export type RequesterDetails = {
   name: string;
@@ -37,8 +40,10 @@ export const emptyRequesterDetails: RequesterDetails = {
   mailingAddress: "",
 };
 
-export function preflightComplete(preflight: PreflightState): boolean {
-  return preflightChecks.every((check) => preflight[check.id] === true);
+export function preflightComplete(preflight: PreflightState, today: string): boolean {
+  return preflightChecks.every((check) => preflight[check.id] === true) &&
+    preflight.routeConfirmedOn === today &&
+    preflight.feeConfirmedOn === today;
 }
 
 export function requesterDetailsComplete(
@@ -55,11 +60,16 @@ export function requesterDetailsComplete(
 export function filingPackageReady(
   preflight: PreflightState,
   requester: RequesterDetails,
-  submissionKind: SubmissionMethod["kind"],
+  request: FilingRequest,
+  today: string,
 ): boolean {
   return (
-    preflightComplete(preflight) &&
-    requesterDetailsComplete(requester, submissionKind)
+    request.routeStatus === "verified" &&
+    request.feeStatus === "verified" &&
+    request.verifiedOn <= today &&
+    today <= request.expiresOn &&
+    preflightComplete(preflight, today) &&
+    requesterDetailsComplete(requester, request.submission.kind)
   );
 }
 

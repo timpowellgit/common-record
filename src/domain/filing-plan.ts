@@ -28,6 +28,9 @@ export interface Institution {
   applicationFeeCents: number;
   feeStatus: VerificationStatus;
   contactStatus: VerificationStatus;
+  sourceUrl: string;
+  verifiedOn: string;
+  expiresOn: string;
   verificationNote: string;
 }
 
@@ -79,6 +82,11 @@ export interface FilingRequest {
   submission: SubmissionMethod;
   estimatedApplicationFeeCents: number;
   verificationStatus: VerificationStatus;
+  routeStatus: VerificationStatus;
+  feeStatus: VerificationStatus;
+  sourceUrl: string;
+  verifiedOn: string;
+  expiresOn: string;
   verificationNote: string;
   approvalGates: readonly ApprovalGate[];
   status: "draft";
@@ -118,6 +126,12 @@ function assertValidInstitutions(institutions: readonly Institution[]) {
     ids.add(institution.id);
     if (!Number.isInteger(institution.applicationFeeCents) || institution.applicationFeeCents < 0) {
       throw new Error(`Invalid application fee for ${institution.name}.`);
+    }
+    if (!institution.sourceUrl.startsWith("https://") ||
+      !datePattern.test(institution.verifiedOn) ||
+      !datePattern.test(institution.expiresOn) ||
+      institution.expiresOn <= institution.verifiedOn) {
+      throw new Error(`Invalid route verification evidence for ${institution.name}.`);
     }
   }
 }
@@ -211,6 +225,11 @@ export function generateFilingPlan(
     submission: institution.submission,
     estimatedApplicationFeeCents: institution.applicationFeeCents,
     verificationStatus: combineVerificationStatus(campaign, institution),
+    routeStatus: institution.contactStatus,
+    feeStatus: institution.feeStatus,
+    sourceUrl: institution.sourceUrl,
+    verifiedOn: institution.verifiedOn,
+    expiresOn: institution.expiresOn,
     verificationNote: institution.verificationNote,
     approvalGates: buildApprovalGates(institution),
     status: "draft",

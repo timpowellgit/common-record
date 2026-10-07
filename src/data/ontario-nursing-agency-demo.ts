@@ -20,6 +20,9 @@ export const ontarioHospitalInstitutions: readonly Institution[] = [
     applicationFeeCents: 500,
     feeStatus: "verified",
     contactStatus: "verified",
+    sourceUrl: "https://www.uhn.ca/corporate/AboutUHN/Freedom_Of_Information/Pages/default.aspx",
+    verifiedOn: "2026-10-05",
+    expiresOn: "2026-11-04",
     verificationNote: "Checked against UHN's official FOI page and request form on 2026-10-05; re-check before filing.",
   },
   {
@@ -37,6 +40,9 @@ export const ontarioHospitalInstitutions: readonly Institution[] = [
     applicationFeeCents: 500,
     feeStatus: "verified",
     contactStatus: "verified",
+    sourceUrl: "https://sunnybrook.ca/patients-visitors/privacy-and-your-information/freedom-of-information/",
+    verifiedOn: "2026-10-05",
+    expiresOn: "2026-11-04",
     verificationNote: "Checked against Sunnybrook's official FOI page and current form on 2026-10-05; re-check before filing.",
   },
   {
@@ -54,6 +60,9 @@ export const ontarioHospitalInstitutions: readonly Institution[] = [
     applicationFeeCents: 500,
     feeStatus: "verified",
     contactStatus: "verified",
+    sourceUrl: "https://www.hamiltonhealthsciences.ca/mcmaster-childrens-hospital/patients-visitors/privacy/freedom-of-information/",
+    verifiedOn: "2026-10-05",
+    expiresOn: "2026-11-04",
     verificationNote: "Checked against Hamilton Health Sciences' official FOI page and form on 2026-10-05; re-check before filing.",
   },
   {
@@ -71,6 +80,9 @@ export const ontarioHospitalInstitutions: readonly Institution[] = [
     applicationFeeCents: 500,
     feeStatus: "verified",
     contactStatus: "verified",
+    sourceUrl: "https://www.lhsc.on.ca/about-lhsc/freedom-of-information-and-protection-of-privacy-act-fippa",
+    verifiedOn: "2026-10-05",
+    expiresOn: "2026-11-04",
     verificationNote: "Checked against LHSC's official FIPPA page and form on 2026-10-05; re-check before filing.",
   },
   {
@@ -88,6 +100,9 @@ export const ontarioHospitalInstitutions: readonly Institution[] = [
     applicationFeeCents: 500,
     feeStatus: "verified",
     contactStatus: "verified",
+    sourceUrl: "https://www.ottawahospital.on.ca/en/who-we-are/freedom-information",
+    verifiedOn: "2026-10-05",
+    expiresOn: "2026-11-04",
     verificationNote: "Checked against The Ottawa Hospital's official FOI page on 2026-10-05; re-check before filing.",
   },
 ] as const;

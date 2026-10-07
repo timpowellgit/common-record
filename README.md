@@ -1,6 +1,6 @@
 # Common Record
 
-**Fund the questions. Open the answers.**
+**Who has the records we need?**
 
 Common Record is a working product concept for collectively commissioning public-information campaigns in Canada. People signal interest in a question, contribute toward the real cost of acquiring the records, and receive a public dataset—not just a folder of PDFs.
 
@@ -18,7 +18,7 @@ This first version is deliberately small. It demonstrates:
 - a public campaign timeline fed only by operator-approved events;
 - a passcode-gated operator screen (unlinked from the public site) for
   tracking requests, printing filing packages, and publishing timeline updates;
-- a responsive editorial visual system;
+- a responsive Civic Magazine public design, chosen from the design archive;
 - English/French message infrastructure for the public timeline;
 - a Cloudflare Worker serving a read-only public timeline API backed by
   PostgreSQL, merged with the browser's local events and labelled by source.
@@ -70,14 +70,17 @@ npm run build
 
 ## Product boundary
 
-This repository currently contains a front-end prototype plus a read-only
-timeline API. It does not collect payments, retain public form submissions, or
-send public-records requests. Operator changes and published timeline events are
-stored only in the current browser, and are written to the database by no code
-path yet. Printed request letters contain requester details only in the open tab
-and are never saved. Those boundaries are stated in the interface so it can be
-shared safely while the filing workflow is tested manually.
+This repository contains a front-end prototype, a database-backed public
+timeline API, and an Access-gated operator event endpoint. It does not collect
+payments, retain public form submissions, or send public-records requests.
+The operator dashboard still uses a demo passcode and stores request edits in
+the browser; approved timeline events can reach the database through the
+operator API, with a local fallback when it is unavailable. The print flow
+requires current official route research and same-day route and fee checks;
+requester details stay in the open tab and are never saved.
 
 ## Next useful milestone
 
-Use the operator screen to complete the preflight checklist for each of the five requests, enter requester details in the print flow, print and review the letters against the official filing routes, and then decide whether to authorize the $25 pilot filing. Real submission and payment are intentionally not automated.
+Connect the operator dashboard to staff access and durable request records,
+then remove local-only publish success from the production path. The exact
+sequence and exit checks are in [`docs/roadmap.md`](docs/roadmap.md).

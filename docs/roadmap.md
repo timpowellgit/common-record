@@ -4,15 +4,21 @@ This roadmap takes Common Record from a public prototype to a bilingual Canadian
 
 The sequence matters. Payments should not launch before campaign rules, refunds, accounting, security and operational ownership are ready. Automated filing should not launch before an institution's route has been manually verified end to end.
 
-## Status — October 2026
+## Status — 2026-10-06
 
-Progress against "Immediate next sprint" (see the end of this document):
+The Cloudflare Worker serves the public site at `commonrecord.ca`, with Neon
+Postgres behind Hyperdrive. GitHub Pages remains a static design/prototype
+deployment. The public timeline can read approved events from the database;
+the broader campaign and operator experience still uses bundled data and
+browser storage. Provisioning is recorded in `docs/production-inventory.md`.
 
-- [x] **Database schema designed and validated** — `db/schema.sql` and
+Completed foundations:
+
+- [x] **Database schema designed and deployed** — `db/schema.sql` and
   `db/seed.sql` cover places, institutions, versioned filing routes, the
   campaign, five draft requests, and append-only status/audit events, with
-  private requester data in a separate table. Applied and tested against
-  PostgreSQL 15; not yet deployed anywhere.
+  private requester data in a separate table. Applied to Neon after local
+  PostgreSQL validation.
 - [x] **Operator screen behind a gated route** — `#/operator` with a session
   passcode gate; no public query parameter or footer link. A workflow boundary,
   not authentication.
@@ -28,18 +34,36 @@ Progress against "Immediate next sprint" (see the end of this document):
 - [x] **Campaign rules drafted** — `docs/campaign-rules-draft.md` covers
   surplus, failure, withdrawal, narrowing, appeals, refunds, chargebacks and
   privacy, ready for legal and accounting review.
-- [x] **Platform recommendation prepared** — `docs/production-platform-decision.md`;
-  final vendor selection remains Tim's decision.
-- [x] **Deploy the schema to a real database and serve the site from it** —
-  Neon Postgres behind a Cloudflare Worker and Hyperdrive; the public timeline
-  is database-backed. (First Phase 1 task.)
-- [~] **Authenticated operator write path** — the guarded
-  `POST /api/operator/campaigns/:slug/events` endpoint exists and verifies
-  Cloudflare Access JWTs, but Access cannot be applied until a custom domain is
-  attached, so the operator screen still falls back to browser storage.
+- [x] **Hosting and database selected and provisioned** — Cloudflare Workers
+  and Neon Postgres via Hyperdrive; the public timeline is database-backed.
+  The earlier platform note is a historical recommendation, not an open
+  hosting decision.
+- [x] **Operator API and Access boundary provisioned** — the custom domain,
+  Cloudflare Access application, signed-JWT verification, and guarded
+  `POST /api/operator/campaigns/:slug/events` route exist. This does not make
+  the browser's demo passcode a production staff login.
+- [x] **Visual direction selected and applied to the static public site** —
+  Civic Magazine, gallery concept 20, now shapes the homepage and campaign
+  index. The existing campaign detail panel uses the new palette but remains
+  prototype content; the live Worker awaits a separately approved deployment.
+- [x] **Filing-package preflight tightened** — printing requires same-day
+  route and fee confirmations, plus current verified route research with an
+  official source link and review date. This is a local supervised gate, not
+  proof of a live filing or a persisted operator workflow.
 
-Not started: file storage and scanning, payments, email, deadlines, social
-publishing, and Quebec research.
+In progress:
+
+- [~] **Durable operator workflow** — the event form attempts the guarded API,
+  but falls back to browser storage when unavailable. Request edits, preflight
+  state, and operator notes still live locally. Staff identity and permissions
+  are not integrated into the dashboard.
+- [~] **Database-backed public site** — the timeline is live; campaign
+  discovery, budgets, proposal and contribution interactions remain prototype
+  data or local UI. The static Pages gallery is not the live data source.
+
+Not started: file storage and scanning, payments, transactional email,
+deadline jobs, social publishing, and Quebec filing-route research. No real
+request has been filed through the product.
 
 ## Product destination
 
@@ -378,7 +402,7 @@ French UI alone is not Quebec operational readiness. Before Quebec campaigns lau
 
 | Release | User-visible result | Depends on |
 |---|---|---|
-| 0.2 | Real pilot timeline and database-backed operator workflow | Phase 0 |
+| 0.2 | Real pilot timeline and database-backed operator workflow | Public timeline live; durable operator workflow remains |
 | 0.3 | Production public site with interest registration | Phases 0–1 |
 | 0.4 | Five requests manually filed and publicly tracked | Explicit filing approval |
 | 0.5 | Capped real contributions through Stripe | Phase 2 gates |
@@ -390,18 +414,43 @@ French UI alone is not Quebec operational readiness. Before Quebec campaigns lau
 
 ## Immediate next sprint
 
-The next sprint should stay focused on the operational spine:
+The next sprint connects the selected public design to the operational spine
+already deployed. Deliverables are ordered so each can be reviewed separately:
 
-1. Select the production hosting, database, object storage and email providers.
-2. Implement the database schema for campaigns, institutions, requests and status events.
-3. Add staff authentication and move the operator screen behind it.
-4. Convert the researched five-hospital pilot into database seed data.
-5. Generate printable request packages and a preflight checklist.
-6. Publish a database-backed public timeline with no private data.
-7. Draft campaign, privacy, refund and surplus rules for legal review.
-8. Add internationalization infrastructure before new public copy expands.
+1. **Finish Civic Magazine on the production experience.** The homepage and
+   campaign index now use concept 20's typography and responsive layout in
+   source and the static Pages deployment. Carry it into the pilot's detail
+   view and the approved Worker deployment; keep campaign state and prototype
+   contribution behavior truthful.
+2. **Make the production boundary visible.** Distinguish database-backed
+   timeline events from local demo events on public pages, and keep prototype
+   proposal and contribution interactions clearly labeled. Confirm the static
+   gallery does not become an alternate operational surface.
+3. **Complete staff access before durable edits.** Put the operator dashboard
+   behind server-enforced Access and role checks, remove the demo passcode from
+   the production route, and make unauthorized and expired sessions fail
+   closed. Verify an authorized staff member can reach the existing event API
+   while an unauthenticated request cannot.
+4. **Persist the five-request workflow.** Read and write request status,
+   preflight checks, notes and event history through the database with audit
+   records and validation. Keep requester contact details in private storage
+   only when an explicit retention design is approved; until then, preserve
+   the current tab-only print flow.
+5. **Remove misleading local publish success in production.** A failed API
+   write must show a failure and leave the public timeline unchanged. Test
+   successful writes, retries, unauthorized writes, private-field rejection,
+   and cross-browser visibility of an approved event.
+6. **Prove recovery and pilot readiness.** Add a database restore drill,
+   verify five filing packages against current official routes and fees, and
+   document who approves filing, redaction and public updates. Keep actual
+   submission and payment behind Tim's separate authorization.
 
-At the end of this sprint, Common Record should still take no money and send no requests automatically. It should, however, be capable of operating the first campaign safely after explicit human approval.
+Sprint exit: the public site uses the selected design without overstating
+product status; a real authorized operator can update the pilot's five request
+records and publish a redacted event that another browser can read; failures
+do not silently create local-only history; private fields remain out of the
+public API; and a restore has been demonstrated. The site still takes no money
+and sends no requests automatically.
 
 ## Decisions Tim must make
 
@@ -412,4 +461,6 @@ At the end of this sprint, Common Record should still take no money and send no 
 - Which social accounts and public voice represent Common Record.
 - Who provides qualified Canadian legal, accounting and French-language review.
 
-These decisions do not block database and workflow development, but they do block real payments, filings and a fully public operational launch.
+These decisions do not block design or database workflow development, but
+requester identity blocks real filing, and entity and funding decisions block
+real payments and a fully public operational launch.

@@ -28,6 +28,8 @@ const fullPreflight: PreflightState = {
   fee: true,
   wording: true,
   enclosures: true,
+  routeConfirmedOn: "2026-10-06",
+  feeConfirmedOn: "2026-10-06",
 };
 
 const completeRequester: RequesterDetails = {
@@ -39,9 +41,11 @@ const completeRequester: RequesterDetails = {
 
 describe("preflight", () => {
   it("is complete only when every check is true", () => {
-    expect(preflightComplete(fullPreflight)).toBe(true);
-    expect(preflightComplete({ ...fullPreflight, route: false })).toBe(false);
-    expect(preflightComplete({})).toBe(false);
+    expect(preflightComplete(fullPreflight, "2026-10-06")).toBe(true);
+    expect(preflightComplete({ ...fullPreflight, route: false }, "2026-10-06")).toBe(false);
+    expect(preflightComplete({}, "2026-10-06")).toBe(false);
+    expect(preflightComplete(fullPreflight, "2026-10-07")).toBe(false);
+    expect(preflightComplete({ ...fullPreflight, feeConfirmedOn: undefined }, "2026-10-06")).toBe(false);
   });
 
   it("requires requester name and route-appropriate contact details", () => {
@@ -61,11 +65,15 @@ describe("preflight", () => {
   });
 
   it("gates the filing package on both preflight and requester details", () => {
-    expect(filingPackageReady(fullPreflight, completeRequester, "mail")).toBe(true);
-    expect(filingPackageReady({}, completeRequester, "mail")).toBe(false);
-    expect(filingPackageReady(fullPreflight, emptyRequesterDetails, "mail")).toBe(
+    expect(filingPackageReady(fullPreflight, completeRequester, uhnRequest, "2026-10-06")).toBe(true);
+    expect(filingPackageReady({}, completeRequester, uhnRequest, "2026-10-06")).toBe(false);
+    expect(filingPackageReady(fullPreflight, emptyRequesterDetails, uhnRequest, "2026-10-06")).toBe(
       false,
     );
+    expect(filingPackageReady(fullPreflight, completeRequester, uhnRequest, "2026-11-05")).toBe(false);
+    expect(filingPackageReady(fullPreflight, completeRequester, uhnRequest, "2026-10-04")).toBe(false);
+    expect(filingPackageReady(fullPreflight, completeRequester, { ...uhnRequest, routeStatus: "needs-verification" }, "2026-10-06")).toBe(false);
+    expect(filingPackageReady(fullPreflight, completeRequester, { ...uhnRequest, feeStatus: "needs-verification" }, "2026-10-06")).toBe(false);
   });
 });
 

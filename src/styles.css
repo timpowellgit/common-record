@@ -136,3 +136,75 @@ footer a { border-bottom: 1px solid currentColor; }
   .trust-strip { justify-content: flex-start; overflow: hidden; white-space: nowrap; }
   .detail-panel, .form-panel, .contribution-panel, .filing-panel { padding: 45px 24px 30px; }.detail-panel h2, .form-panel h2, .contribution-panel h2, .filing-panel h2 { font-size: 39px; }.stat-grid strong { font-size: 22px; }.filing-preview { align-items: flex-start; flex-direction: column; }.plan-summary { grid-template-columns: 1fr; }.plan-summary div { border-bottom: 1px solid var(--rule); }.request-detail { padding-left: 0; }.request-detail ul { columns: 1; }
 }
+
+/* Chosen public direction: concept 20, Civic Magazine. The other designs remain
+   available in the archive; the operational panels below keep their own styles. */
+.civic-site { --ink: #f5f0e6; --rule: #555; color: #f5f0e6; background: #101010; font-family: "Libre Franklin", "Manrope", sans-serif; }
+.civic-site .site-header { max-width: none; min-height: 76px; padding: 20px clamp(22px, 4vw, 66px); border-bottom: 1px solid #555; }
+.civic-site .brand { font-size: 21px; font-weight: 600; letter-spacing: -.06em; }
+.civic-site .site-header nav { font-size: 12px; font-weight: 400; gap: 26px; }
+.civic-site .text-button { border-color: #f5f0e6; }
+.civic-site .civic-label { margin: 0; color: #f4bd3b; font: 10px "DM Mono", monospace; text-transform: uppercase; letter-spacing: .08em; }
+.civic-site .civic-cover { min-height: 710px; display: grid; grid-template-columns: 1.2fr .8fr; }
+.civic-site .civic-cover-lead, .civic-site .civic-cover-feature { padding: 52px clamp(22px, 4vw, 66px); }
+.civic-site .civic-cover-lead { border-right: 1px solid #555; }
+.civic-site .civic-cover-lead h1 { margin: 62px 0 28px; color: #f05b40; font: clamp(66px, 8.7vw, 135px)/.8 "Archivo Black", sans-serif; letter-spacing: -.075em; }
+.civic-site .civic-cover-lead > p:last-child { max-width: 430px; font-size: 14px; line-height: 1.5; }
+.civic-site .civic-cover-feature { display: flex; flex-direction: column; justify-content: flex-end; }
+.civic-site .civic-cover-feature h2 { max-width: 570px; margin: 28px 0 20px; font-size: clamp(36px, 4vw, 58px); line-height: .99; letter-spacing: -.055em; font-weight: 500; }
+.civic-site .civic-cover-feature > p:not(.civic-label) { max-width: 425px; color: #bbb; font-size: 14px; line-height: 1.6; }
+.civic-site .civic-cover-feature button, .civic-site .closing-section button { align-self: flex-start; margin-top: 28px; padding: 0 0 7px; border: 0; border-bottom: 1px solid; background: transparent; color: inherit; font-size: 13px; cursor: pointer; }
+.civic-site .civic-cover-feature button span, .civic-site .closing-section button span { margin-left: 22px; }
+.civic-site .civic-cover-notes { display: grid; grid-template-columns: repeat(3, 1fr); border-block: 1px solid #555; }
+.civic-site .civic-cover-notes > div { min-height: 140px; display: flex; align-items: baseline; gap: 14px; padding: 40px clamp(22px, 4vw, 66px); }
+.civic-site .civic-cover-notes > div:not(:last-child) { border-right: 1px solid #555; }
+.civic-site .civic-cover-notes strong { font-size: 35px; font-weight: 500; }
+.civic-site .civic-cover-notes span { color: #aaa; font: 10px "DM Mono", monospace; text-transform: uppercase; }
+.civic-site .campaign-section { max-width: none; padding: 100px clamp(22px, 4vw, 66px) 110px; }
+.civic-site .section-heading { max-width: 1350px; margin: 0 auto 55px; grid-template-columns: 1.5fr .5fr; gap: 50px; }
+.civic-site .section-heading h2 { margin-top: 22px; font: clamp(47px, 6vw, 83px)/.95 "Archivo Black", sans-serif; letter-spacing: -.065em; color: #f05b40; }
+.civic-site .section-heading p:last-child { color: #b8b8b8; }
+.civic-site .campaign-grid { max-width: 1350px; margin: auto; display: block; border-top: 1px solid #555; }
+.civic-site .campaign-card { min-height: 0; display: grid; grid-template-columns: 1fr 2fr 1.5fr .85fr; align-items: center; gap: 30px; padding: 30px 0; border: 0; border-bottom: 1px solid #555; background: transparent; cursor: default; transition: none; }
+.civic-site .campaign-card:hover { transform: none; box-shadow: none; }
+.civic-site .card-topline { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; color: #f4bd3b; font: 10px "DM Mono", monospace; }
+.civic-site .status { padding: 0; border: 0; color: #aaa; font-size: 9px; }
+.civic-site .campaign-card h3 { margin: 0; font-size: clamp(25px, 2.5vw, 37px); line-height: 1.08; font-weight: 500; }
+.civic-site .campaign-card > p { max-width: 360px; color: #aaa; font-size: 12px; }
+.civic-site .card-foot { margin: 0; padding: 0; border: 0; gap: 16px; }
+.civic-site .card-foot > span { color: #aaa; font: 10px/1.5 "DM Mono", monospace; text-transform: none; letter-spacing: 0; }
+.civic-site .card-foot button { flex: 0 0 42px; width: 42px; height: 42px; border: 1px solid #aaa; color: #f5f0e6; }
+.civic-site .card-foot button:hover, .civic-site .card-foot button:focus-visible { background: #f05b40; color: #101010; border-color: #f05b40; }
+.civic-site .process-section { max-width: none; padding: 100px clamp(22px, 4vw, 66px); grid-template-columns: .9fr 1.1fr; gap: 10vw; border-block: 1px solid #555; background: #191919; }
+.civic-site .process-intro h2 { margin: 24px 0; color: #f5f0e6; font: clamp(46px, 5vw, 75px)/.98 "Archivo Black", sans-serif; letter-spacing: -.06em; }
+.civic-site .process-intro > p:last-child { max-width: 360px; color: #bbb; font-size: 13px; line-height: 1.6; }
+.civic-site .steps { border-color: #555; }.civic-site .steps li { border-color: #555; }.civic-site .steps li > span { color: #f4bd3b; }
+.civic-site .steps h3 { font-weight: 500; }.civic-site .steps p { color: #aaa; }
+.civic-site .closing-section { max-width: none; padding: 110px clamp(22px, 4vw, 66px); text-align: left; }
+.civic-site .closing-section h2 { margin-top: 20px; color: #f05b40; font: clamp(65px, 9vw, 130px)/.86 "Archivo Black", sans-serif; letter-spacing: -.075em; }
+.civic-site .closing-section button { margin-top: 38px; }
+.civic-site footer { max-width: none; padding: 30px clamp(22px, 4vw, 66px); border-color: #555; color: #aaa; }
+.civic-site footer .brand { color: #f5f0e6; }.civic-site footer p { max-width: 400px; font-size: 11px; line-height: 1.5; }
+.civic-site .detail-panel, .civic-site .form-panel, .civic-site .contribution-panel, .civic-site .filing-panel { --ink: #17211d; --rule: rgba(23, 33, 29, .18); color: #17211d; font-family: "Manrope", sans-serif; }
+.civic-site .detail-panel .button, .civic-site .form-panel .button, .civic-site .contribution-panel .button { border-radius: 2px; }
+.civic-site .detail-panel { background: #f5f0e6; font-family: "Libre Franklin", sans-serif; }
+.civic-site .detail-panel .kicker, .civic-site .detail-panel .mini-label { color: #a63e2c; }
+.civic-site .detail-panel h2 { color: #b84530; font: clamp(34px, 3.8vw, 53px)/.98 "Archivo Black", sans-serif; letter-spacing: -.055em; }
+.civic-site .detail-panel .detail-summary, .civic-site .detail-panel .detail-block p { color: #41443f; }
+.civic-site .detail-panel .button.primary { background: #f05b40; }
+.civic-site .detail-panel .progress-value { background: #b84530; }
+.civic-site .detail-panel .filing-preview { background: #e9e0d1; border-color: #b84530; }
+.civic-site .detail-panel .filing-preview .mini-label { color: #b84530; }
+.civic-site a:focus-visible, .civic-site button:focus-visible { outline: 2px solid #f4bd3b; outline-offset: 4px; }
+@media (max-width: 950px) {
+  .civic-site .civic-cover { grid-template-columns: 1fr 1fr; }.civic-site .civic-cover-lead h1 { font-size: clamp(58px, 8vw, 90px); }
+  .civic-site .campaign-card { grid-template-columns: .8fr 1.7fr 1.2fr; }.civic-site .card-foot { grid-column: 2 / -1; justify-content: space-between; }
+}
+@media (max-width: 700px) {
+  .civic-site .site-header { align-items: flex-start; flex-wrap: wrap; gap: 18px; }.civic-site .site-header nav { width: 100%; justify-content: space-between; gap: 12px; }.civic-site .site-header nav a { display: block; }
+  .civic-site .civic-cover { display: block; }.civic-site .civic-cover-lead, .civic-site .civic-cover-feature { padding: 36px 22px; }.civic-site .civic-cover-lead { border-right: 0; border-bottom: 1px solid #555; }.civic-site .civic-cover-lead h1 { margin: 40px 0 30px; font-size: clamp(55px, 11vw, 76px); }.civic-site .civic-cover-feature { min-height: 340px; }
+  .civic-site .civic-cover-notes { grid-template-columns: 1fr; }.civic-site .civic-cover-notes > div { min-height: 85px; padding: 20px 22px; align-items: center; }.civic-site .civic-cover-notes > div:not(:last-child) { border-right: 0; border-bottom: 1px solid #555; }
+  .civic-site .campaign-section { padding-block: 80px; }.civic-site .section-heading { display: block; }.civic-site .section-heading h2 { margin-bottom: 25px; }.civic-site .campaign-card { display: grid; grid-template-columns: 1fr auto; gap: 18px; }.civic-site .campaign-card h3, .civic-site .campaign-card > p { grid-column: 1/-1; }.civic-site .card-topline { flex-direction: row; grid-column: 1/-1; }.civic-site .card-foot { grid-column: 1/-1; }
+  .civic-site .process-section { grid-template-columns: 1fr; gap: 50px; }.civic-site .closing-section h2 { font-size: clamp(58px, 11vw, 85px); }
+  .civic-site footer { flex-wrap: wrap; gap: 22px; }.civic-site footer p { order: 3; width: 100%; }
+}
