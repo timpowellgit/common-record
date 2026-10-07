@@ -55,10 +55,10 @@ In progress:
 
 - [~] **Durable operator workflow** — a server-checked Access gate, role checks,
   versioned request API, audit-backed notes and preflight state, and a matching
-  dashboard client are implemented locally. The additive migration is proven
-  on scratch PostgreSQL, not applied to Neon; the real Access email is not yet
-  a provisioned staff account. Production remains on the previously deployed
-  code until this work is reviewed and activated.
+  dashboard client are deployed. The additive migration is proven on scratch
+  PostgreSQL, not applied to Neon; the real Access email is not yet a
+  provisioned staff account. The live dashboard therefore fails closed rather
+  than offering staff request editing.
 - [~] **Database-backed public site** — the timeline is live and authoritative;
   campaign discovery, budgets, proposal and contribution interactions remain prototype
   data or local UI. The static Pages gallery is not the live data source.
@@ -423,12 +423,12 @@ already deployed. Deliverables are ordered so each can be reviewed separately:
    design and authoritative database timeline are live; the two timeline
    events were verified once each. Proposal and contribution interactions are
    still explicitly labelled as prototypes.
-2. **Staff access — coded, not activated.** Deploy the server-enforced Access
-   and role gate only after provisioning the correct staff identity. Verify
+2. **Staff access — deployed, not activated.** The server-enforced Access and
+   role gate is live. Provision the correct staff identity, then verify
    authorized, unauthorized and expired sessions against production.
-3. **Five-request workflow — coded, not activated.** Review and apply
-   `db/migrations/0001_operator_workflow.sql`, then deploy the versioned
-   request API and dashboard client. Requester contact details remain tab-only
+3. **Five-request workflow — deployed, not activated.** Review and apply
+   `db/migrations/0001_operator_workflow.sql`, then verify the deployed
+   versioned request API and dashboard client. Requester contact details remain tab-only
    in the local prototype; live printing is disabled until server-backed route
    and letter generation are ready.
 4. **Verify production publishing end to end.** The code now makes a failed

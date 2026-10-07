@@ -11,7 +11,9 @@ Last reviewed: 2026-10-06.
 - **Public site + API:** https://commonrecord.ca (and https://www.commonrecord.ca)
 - **Worker (direct):** https://common-record.common-record.workers.dev
 - **Health:** https://commonrecord.ca/api/health → `{"database":"up"}`
-- **Operator API (Access-gated):** `/api/operator/campaigns/:slug/events`
+- **Operator API (Access-gated):** `/api/operator/session`, campaign events,
+  and request list/edit routes; request editing awaits its database migration
+  and a real staff account.
 - **Static prototype (GitHub Pages):** https://timpowellgit.github.io/common-record/
 
 The GitHub Pages build is static only and shows prototype data. The Cloudflare

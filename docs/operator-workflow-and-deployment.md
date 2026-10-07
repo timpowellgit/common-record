@@ -1,15 +1,16 @@
 # Operator workflow and activation
 
-The public site and approved campaign timeline are live at `commonrecord.ca`.
-The operator dashboard remains an implementation in progress. This document
-distinguishes the current deployment from the local code awaiting activation.
+The public site, approved campaign timeline, and server-checked operator gate
+are live at `commonrecord.ca`. The operator workflow is deployed but not yet
+activated for staff editing because the migration and real staff identity are
+still outstanding.
 
 ## Current production boundary
 
-- Cloudflare Access protects `/api/operator` and the Worker validates its
-  signed assertion. The currently deployed browser dashboard still uses a
-  demonstration passcode and keeps request edits in local storage; it is not
-  an operational staff tool.
+- Cloudflare Access protects `/api/operator`; the Worker validates its signed
+  assertion and requires an operator/administrator staff row. The production
+  dashboard checks `/api/operator/session` and fails closed. A live anonymous
+  check redirected to Access after the deployment of PR #8.
 - The event-write API requires a known staff account. The documented Access
   policy admits `timpowelldk@gmail.com`, while the seeded staff row uses the
   example address `tim@commonrecord.example`. Do not claim a successful staff
@@ -17,7 +18,7 @@ distinguishes the current deployment from the local code awaiting activation.
 - No request is filed and no fee is paid through this product. The public
   contribution/proposal interactions are demonstrations only.
 
-## Implemented locally, not deployed
+## Deployed code, pending activation
 
 - On production hosts, `#/operator` checks `GET /api/operator/session` before
   rendering the dashboard. Missing or expired Access identity, unknown staff,
@@ -36,7 +37,8 @@ distinguishes the current deployment from the local code awaiting activation.
   details and is still not a filing action.
 - `db/migrations/0001_operator_workflow.sql` adds durable checklist, version,
   and note immutability. It passed a fresh PostgreSQL 15 integration test but
-  has **not** been applied to Neon.
+  has **not** been applied to Neon; request-list/edit routes currently cannot
+  provide a working staff workflow.
 
 ## Activation sequence and exit gate
 
