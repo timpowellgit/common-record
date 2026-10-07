@@ -12,6 +12,25 @@
 .gallery-source { max-width: 360px; justify-self: end; display: grid; grid-template-columns: auto 1fr; column-gap: 10px; align-items: baseline; }
 .gallery-source strong { font-size: 12px; }.gallery-source small { grid-column: 1 / -1; margin-top: 3px; color: #aaa; font-size: 10px; }
 .gallery-stage { padding: 24px; }
+.gallery-source a { text-decoration: underline; text-underline-offset: 3px; }
+.gallery-picker select:focus-visible { outline: 2px solid white; outline-offset: 3px; }
+@media (max-width: 1000px) {
+  .gallery-toolbar { grid-template-columns: auto 1fr; gap: 12px; }
+  .gallery-picker { justify-self: end; }
+  .gallery-source { grid-column: 1/-1; justify-self: start; max-width: none; }
+}
+@media (max-width: 620px) {
+  .gallery-toolbar { display: flex!important; flex-direction: column; align-items: stretch!important; padding: 16px; }
+  .gallery-picker { width: 100%; min-width: 0; }
+  .gallery-picker label { flex: 1; min-width: 0; padding-inline: 8px; }
+  .gallery-picker label > span { display: none; }
+  .gallery-picker select { min-width: 0; width: 100%; font-size: 11px; }
+  .gallery-picker button { flex: 0 0 36px; min-height: 40px; }
+  .gallery-source { display: block; }
+  .gallery-source > span { margin-right: 10px; }
+  .gallery-source small { display: block; line-height: 1.5; }
+  .gallery-stage { padding: 10px!important; }
+}
 .mockup { width: min(1440px, 100%); min-height: calc(100vh - 134px); margin: auto; overflow: hidden; background: #fff; box-shadow: 0 12px 45px rgba(0,0,0,.16); }
 .mockup a { text-decoration: none; color: inherit; }
 .mg-nav { height: 76px; padding: 0 42px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid currentColor; }

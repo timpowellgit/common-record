@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import "./mockups.css";
+import { referenceConcepts } from "./ReferenceMockups";
 
 type Concept = {
   id: string;
   name: string;
   source: string;
+  sourceUrl?: string;
   note: string;
   render: () => React.ReactNode;
 };
@@ -280,6 +282,7 @@ const concepts: Concept[] = [
   { id: "rows", name: "18 Responsive rows", source: "Hover States", note: "A spare campaign index whose rows reveal hierarchy on hover.", render: ResponsiveRows },
   { id: "archive", name: "19 Public archive", source: "Collect UI", note: "Search, three light filters and an uncluttered records list.", render: PublicArchive },
   { id: "magazine", name: "20 Civic magazine", source: "Godly", note: "Editorial energy with one feature, one thesis and three facts.", render: CivicMagazine },
+  ...referenceConcepts,
 ];
 
 export function MockupGallery() {
@@ -305,7 +308,7 @@ export function MockupGallery() {
           <label><span>Concept</span><select value={current} onChange={(event) => setCurrent(Number(event.target.value))}>{concepts.map((item, index) => <option value={index} key={item.id}>{item.name}</option>)}</select></label>
           <button onClick={() => setCurrent((current + 1) % concepts.length)} aria-label="Next concept">→</button>
         </div>
-        <div className="gallery-source"><span>Reference lens</span><strong>{concept.source}</strong><small>{concept.note}</small></div>
+        <div className="gallery-source"><span>{concept.sourceUrl ? "Template studied" : "Reference lens"}</span><strong>{concept.sourceUrl ? <a href={concept.sourceUrl} target="_blank" rel="noreferrer">{concept.source} ↗</a> : concept.source}</strong><small>{concept.note}</small></div>
       </div>
       <div className="gallery-stage"><ConceptView /></div>
     </div>
