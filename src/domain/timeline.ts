@@ -117,23 +117,13 @@ export function campaignTimeline(
     );
 }
 
-/**
- * Combine database-sourced events with locally stored prototype events.
- * Database events win on id collision; the result stays chronologically
- * ordered so the public timeline reads as one story.
- */
-export function mergeTimelineSources(
+/** Use the database as the complete timeline when it responds, including when
+ * it returns no events. Local prototype events are a fallback only. */
+export function selectTimelineSource(
   databaseEvents: readonly PublicTimelineEvent[] | null,
   localEvents: readonly PublicTimelineEvent[],
 ): PublicTimelineEvent[] {
-  const merged = new Map<string, PublicTimelineEvent>();
-  for (const event of localEvents) {
-    merged.set(event.id, event);
-  }
-  for (const event of databaseEvents ?? []) {
-    merged.set(event.id, event);
-  }
-  return [...merged.values()].sort(
+  return [...(databaseEvents ?? localEvents)].sort(
     (a, b) =>
       a.occurredOn.localeCompare(b.occurredOn) ||
       a.approvedAt.localeCompare(b.approvedAt),

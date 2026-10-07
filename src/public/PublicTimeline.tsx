@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { loadPublicTimeline, subscribeToPublicTimeline } from "../data/timeline-store";
 import {
   campaignTimeline,
-  mergeTimelineSources,
+  selectTimelineSource,
   type PublicTimelineEvent,
 } from "../domain/timeline";
 import { t, timelineEventTypeLabel, type Locale } from "../i18n";
@@ -44,7 +44,7 @@ export function PublicTimeline({ campaignId, locale = "en" }: PublicTimelineProp
 
   const timeline = useMemo(
     () =>
-      mergeTimelineSources(
+      selectTimelineSource(
         databaseEvents,
         campaignTimeline(localEvents, campaignId),
       ),

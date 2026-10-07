@@ -423,9 +423,11 @@ already deployed. Deliverables are ordered so each can be reviewed separately:
    view and the approved Worker deployment; keep campaign state and prototype
    contribution behavior truthful.
 2. **Make the production boundary visible.** Distinguish database-backed
-   timeline events from local demo events on public pages, and keep prototype
-   proposal and contribution interactions clearly labeled. Confirm the static
-   gallery does not become an alternate operational surface.
+   timeline events from local demo events on public pages. Source selection is
+   now coded so database events replace the local prototype timeline when the
+   API responds; confirm it after the Worker deployment. Keep prototype
+   proposal and contribution interactions clearly labeled and confirm the
+   static gallery does not become an alternate operational surface.
 3. **Complete staff access before durable edits.** Put the operator dashboard
    behind server-enforced Access and role checks, remove the demo passcode from
    the production route, and make unauthorized and expired sessions fail
@@ -436,10 +438,10 @@ already deployed. Deliverables are ordered so each can be reviewed separately:
    records and validation. Keep requester contact details in private storage
    only when an explicit retention design is approved; until then, preserve
    the current tab-only print flow.
-5. **Remove misleading local publish success in production.** A failed API
-   write must show a failure and leave the public timeline unchanged. Test
-   successful writes, retries, unauthorized writes, private-field rejection,
-   and cross-browser visibility of an approved event.
+5. **Verify production publishing end to end.** The code now makes a failed
+   API write show failure instead of a local success on production hosts.
+   After deployment, test successful writes, retries, unauthorized writes,
+   private-field rejection, and cross-browser visibility of an approved event.
 6. **Prove recovery and pilot readiness.** Add a database restore drill,
    verify five filing packages against current official routes and fees, and
    document who approves filing, redaction and public updates. Keep actual

@@ -21,7 +21,7 @@ This first version is deliberately small. It demonstrates:
 - a responsive Civic Magazine public design, chosen from the design archive;
 - English/French message infrastructure for the public timeline;
 - a Cloudflare Worker serving a read-only public timeline API backed by
-  PostgreSQL, merged with the browser's local events and labelled by source.
+  PostgreSQL, with local prototype events shown only when the API is unavailable.
 
 The pilot research uses current official filing instructions and is documented in
 [`docs/pilot-campaign-agency-nursing.md`](docs/pilot-campaign-agency-nursing.md).
@@ -75,12 +75,13 @@ timeline API, and an Access-gated operator event endpoint. It does not collect
 payments, retain public form submissions, or send public-records requests.
 The operator dashboard still uses a demo passcode and stores request edits in
 the browser; approved timeline events can reach the database through the
-operator API, with a local fallback when it is unavailable. The print flow
+operator API. A failed production write is not shown as published; local event
+fallback is limited to the static prototype and local development. The print flow
 requires current official route research and same-day route and fee checks;
 requester details stay in the open tab and are never saved.
 
 ## Next useful milestone
 
 Connect the operator dashboard to staff access and durable request records,
-then remove local-only publish success from the production path. The exact
+then verify production publishing and recovery across browsers. The exact
 sequence and exit checks are in [`docs/roadmap.md`](docs/roadmap.md).

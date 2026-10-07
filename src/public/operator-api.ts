@@ -1,8 +1,7 @@
 /**
  * Operator write client. Calls the authenticated Worker endpoint. When the
- * operator API is not reachable or Access is not configured (401/403/503), the
- * caller falls back to the local prototype store, so the current gated demo
- * keeps working before the API is live.
+ * operator API is not reachable or Access is not configured (401/403/503),
+ * the caller may use local prototype storage only on explicit demo hosts.
  */
 
 export type CreateOperatorEventInput = {
@@ -19,6 +18,11 @@ export type CreateOperatorEventResult =
   | { status: "created"; id: string }
   | { status: "rejected"; message: string }
   | { status: "unavailable" };
+
+export function allowLocalPrototypeFallback(hostname: string): boolean {
+  return hostname === "localhost" || hostname === "127.0.0.1" ||
+    hostname === "timpowellgit.github.io";
+}
 
 export async function createOperatorEvent(
   input: CreateOperatorEventInput,

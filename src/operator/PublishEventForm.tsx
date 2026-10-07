@@ -5,7 +5,7 @@ import {
   type PublicTimelineEventType,
 } from "../domain/timeline";
 import { timelineEventTypeLabel } from "../i18n";
-import { createOperatorEvent } from "../public/operator-api";
+import { allowLocalPrototypeFallback, createOperatorEvent } from "../public/operator-api";
 
 type PublishEventFormProps = {
   campaignId: string;
@@ -51,8 +51,7 @@ export function PublishEventForm({
     event.preventDefault();
     setErrorMessage("");
 
-    // Prefer the authenticated API. If it is unreachable or Access is not
-    // configured, fall back to the local prototype store.
+    // Only the static gallery and local development may publish a demo event.
     const result = await createOperatorEvent({
       campaignId,
       requestRef,
@@ -71,6 +70,11 @@ export function PublishEventForm({
     }
     if (result.status === "rejected") {
       setErrorMessage(result.message);
+      setPublishedMessage("");
+      return;
+    }
+    if (!allowLocalPrototypeFallback(window.location.hostname)) {
+      setErrorMessage("The server did not confirm this update. Nothing was published; try again after access is restored.");
       setPublishedMessage("");
       return;
     }
